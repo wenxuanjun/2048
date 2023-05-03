@@ -1,43 +1,33 @@
 module main
 
-import ui
+import gg
 
 const (
     size = 4
     init_number_count = 2
-    window_width = 400
-    window_height = 600
+    default_width = 465
+    default_height = 500
+    window_title = "2048"
 )
 
 [heap]
-struct Game {
+struct App {
 mut:
     score int
-    window &ui.Window
+    gg &gg.Context
     matrix [][]int
     can_move CanMove
+    window Window
 }
 
 fn main() {
-    mut game := &Game {
+    mut app := &App {
+        gg: 0
         score: 0
-        window: 0
-        matrix: [][]int{len: size, init: []int{len: size}}
+        matrix: [][]int{}
         can_move: &CanMove{}
     }
-
-    for _ in 0 .. init_number_count {
-        game.generate_number()
-    }
-
-    game.refresh_move_status()
-    game.window = ui.window(
-        title: '2048'
-        width: window_width
-        height: window_height
-		on_key_down: fn [mut game] (_ &ui.Window, e ui.KeyEvent) {
-            game.step(e.key)
-        }
-    )
-    ui.run(game.window)
+    app.gui_init()
+    app.game_init()
+    app.gg.run()
 }

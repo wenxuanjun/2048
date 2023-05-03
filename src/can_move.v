@@ -30,19 +30,13 @@ fn (move CanMove) query(dir Direction) bool {
     }
 }
 
-[params]
-struct CompareParam {
-    row int
-    col int
-    row_next int
-    col_next int
-}
-
 [inline]
-fn (mut game Game) empty_or_equal(params CompareParam) bool {
+fn (mut app App) empty_or_equal(
+    row int, col int, row_next int, col_next int
+) bool {
     // 获取当前位置和下一个位置的值
-    current := game.matrix[params.row][params.col]
-    next_tile := game.matrix[params.row_next][params.col_next]
+    current := app.matrix[row][col]
+    next_tile := app.matrix[row_next][col_next]
     // 当前不为空，下一个为空或当前与下一个相等，则可移动
 	if current != 0 {
 		if next_tile == 0 || current == next_tile {
@@ -52,18 +46,18 @@ fn (mut game Game) empty_or_equal(params CompareParam) bool {
 	return false
 }
 
-fn (mut game Game) can_move(dir Direction) bool {
+fn (mut app App) can_move(dir Direction) bool {
     if dir == .left || dir == .right {
         for i := 0; i < size; i++ {
             if dir == .left {
                 for j := 1; j < size; j++ {
-                    if game.empty_or_equal(i, j, i, j - 1) {
+                    if app.empty_or_equal(i, j, i, j - 1) {
                         return true
                     }
                 }
             } else {
                 for j := size - 2; j >= 0; j-- {
-                    if game.empty_or_equal(i, j, i, j + 1) {
+                    if app.empty_or_equal(i, j, i, j + 1) {
                         return true
                     }
                 }
@@ -73,13 +67,13 @@ fn (mut game Game) can_move(dir Direction) bool {
         for j := 0; j < size; j++ {
             if dir == .up {
                 for i := 1; i < size; i++ {
-                    if game.empty_or_equal(i, j, i - 1, j) {
+                    if app.empty_or_equal(i, j, i - 1, j) {
                         return true
                     }
                 }
             } else {
                 for i := size - 2; i >= 0; i-- {
-                    if game.empty_or_equal(i, j, i + 1, j) {
+                    if app.empty_or_equal(i, j, i + 1, j) {
                         return true
                     }
                 }

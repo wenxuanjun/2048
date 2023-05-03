@@ -1,4 +1,4 @@
-import ui
+import gg
 import rand
 
 enum Direction {
@@ -8,74 +8,87 @@ enum Direction {
 	down
 }
 
-fn (mut game Game) step(key ui.Key) {
+fn (mut app App) game_init() {
+	app.matrix = [][]int{
+        len: size,
+        init: []int{len: size}
+    }
+
+    for _ in 0 .. init_number_count {
+        app.generate_number()
+    }
+
+    app.refresh_move_status()
+}
+
+fn (mut app App) step(key gg.KeyCode) {
 	// 根据按键获取方向
-	dir := get_dir(key)
+	dir := get_dir(key) or { return }
 
 	// 判断是否可以移动，否则直接返回
-	if game.can_move.query(dir) {
-		game.move(dir)
+	if app.can_move.query(dir) {
+		app.move(dir)
 	} else {
 		return
 	}
 
 	// 生成新的数字并刷新可移动状态
-	game.generate_number()
-	game.refresh_move_status()
+	app.generate_number()
+	app.refresh_move_status()
 
 	// 打印矩阵和状态
-	println('Score: ' + game.score.str())
-	game.print_matrix()
-	println('Status: ${game.can_move}')
+	println('Score: ' + app.score.str())
+	app.print_board_matrix()
+	println('Status: ${app.can_move}')
 
 	// 判断游戏是否结束
-	if !game.can_move.exist() {
-		println('Game Over!')
+	if !app.can_move.exist() {
+		println('App Over!')
 		exit(0)
 	}
 }
 
 [inline]
-fn get_dir(key ui.Key) Direction {
+fn get_dir(key gg.KeyCode) ?Direction {
 	match key {
 		.left { return .left }
 		.right { return .right }
 		.up { return .up }
 		.down { return .down }
-		else { return .left }
+		else { return none }
 	}
 }
 
-fn (mut game Game) generate_number() {
+fn (mut app App) generate_number() {
 	mut empty_cells := []int{}
 	for i in 0 .. size {
 		for j in 0 .. size {
-			if game.matrix[i][j] == 0 {
+			if app.matrix[i][j] == 0 {
 				empty_cells << i * size + j
 			}
 		}
 	}
 	if empty_cells.len > 0 {
 		index := empty_cells[rand.intn(empty_cells.len) or { 0 }]
-		random := if rand.intn(10) or { 0 } < 9 { 2 } else { 4 }
-		game.matrix[index / size][index % size] = random
+		random := rand.f64n(1.0) or { 0.0 }
+		app.matrix[index / size][index % size] = if random < 0.9 { 2 } else { 4 }
 	}
 }
 
 [inline]
-fn (mut game Game) refresh_move_status() {
-	game.can_move = &CanMove{
-		left: game.can_move(.left)
-		right: game.can_move(.right)
-		up: game.can_move(.up)
-		down: game.can_move(.down)
+fn (mut app App) refresh_move_status() {
+	app.can_move = &CanMove{
+		left: app.can_move(.left)
+		right: app.can_move(.right)
+		up: app.can_move(.up)
+		down: app.can_move(.down)
 	}
 }
 
-fn (mut game Game) print_matrix() {
+fn (mut app App) print_board_matrix() {
 	for i in 0 .. size {
 		for j in 0 .. size {
-			print(game.matrix[i][j])
+			print(app.matrix[i][j])
 			print('  ')
 		}
 		println('\n')

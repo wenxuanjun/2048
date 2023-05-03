@@ -1,19 +1,19 @@
 module main
 
 [inline]
-fn (mut game Game) move(dir Direction) {
+fn (mut app App) move(dir Direction) {
 	match dir {
 		.left {
-			game.move_left()
+			app.move_left()
 		}
 		.right {
-			game.move_right()
+			app.move_right()
 		}
 		.up {
-			game.move_up()
+			app.move_up()
 		}
 		.down {
-			game.move_down()
+			app.move_down()
 		}
 	}
 }
@@ -28,134 +28,134 @@ fn (mut game Game) move(dir Direction) {
 
 // 这四个函数只是方向不同，但我不知道怎么合并成一个函数（恼）
 
-fn (mut game Game) move_left() {
+fn (mut app App) move_left() {
     for i := 0; i < size; i++ {
         mut temp_arr := []int{cap: size}
         for j := 0; j < size; j++ {
-            if game.matrix[i][j] != 0 {
-                temp_arr << game.matrix[i][j]
+            if app.matrix[i][j] != 0 {
+                temp_arr << app.matrix[i][j]
             }
         }
         for j := 0; j < size; j++ {
-            game.matrix[i][j] = temp_arr[j] or { 0 }
+            app.matrix[i][j] = temp_arr[j] or { 0 }
         }
         for j := 0; j < size - 1; j++ {
-            if game.matrix[i][j] != 0 {
-                if game.matrix[i][j] == game.matrix[i][j + 1] {
-                    game.matrix[i][j] *= 2
-                    game.matrix[i][j + 1] = 0
-                    game.score += game.matrix[i][j]
+            if app.matrix[i][j] != 0 {
+                if app.matrix[i][j] == app.matrix[i][j + 1] {
+                    app.matrix[i][j] *= 2
+                    app.matrix[i][j + 1] = 0
+                    app.score += app.matrix[i][j]
                     j++
                 }
             }
         }
         temp_arr.clear()
         for j := 0; j < size; j++ {
-            if game.matrix[i][j] != 0 {
-                temp_arr << game.matrix[i][j]
+            if app.matrix[i][j] != 0 {
+                temp_arr << app.matrix[i][j]
             }
         }
         for j := 0; j < size; j++ {
-            game.matrix[i][j] = temp_arr[j] or { 0 }
+            app.matrix[i][j] = temp_arr[j] or { 0 }
         }   
     }
 }
 
-fn (mut game Game) move_right() {
+fn (mut app App) move_right() {
     for i := 0; i < size; i++ {
         mut temp_arr := []int{cap: size}
         for j := 0; j < size; j++ {
-            if game.matrix[i][j] != 0 {
-                temp_arr << game.matrix[i][j]
+            if app.matrix[i][j] != 0 {
+                temp_arr << app.matrix[i][j]
             }
         }
         for j := 0; j < size; j++ {
-            game.matrix[i][size - j - 1] = temp_arr[j] or { 0 }
+            app.matrix[i][size - j - 1] = temp_arr[j] or { 0 }
         }
         for j := size - 1; j > 0; j-- {
-            if game.matrix[i][j] != 0 {
-                if game.matrix[i][j] == game.matrix[i][j - 1] {
-                    game.matrix[i][j] *= 2
-                    game.matrix[i][j - 1] = 0
-                    game.score += game.matrix[i][j]
+            if app.matrix[i][j] != 0 {
+                if app.matrix[i][j] == app.matrix[i][j - 1] {
+                    app.matrix[i][j] *= 2
+                    app.matrix[i][j - 1] = 0
+                    app.score += app.matrix[i][j]
                     j--
                 }
             }
         }
         temp_arr.clear()
         for j := 0; j < size; j++ {
-            if game.matrix[i][j] != 0 {
-                temp_arr << game.matrix[i][j]
+            if app.matrix[i][j] != 0 {
+                temp_arr << app.matrix[i][j]
             }
         }
         for j := 0; j < size; j++ {
-            game.matrix[i][size - j - 1] = temp_arr[j] or { 0 }
+            app.matrix[i][size - j - 1] = temp_arr[j] or { 0 }
         }
     }
 }
 
-fn (mut game Game) move_up() {
+fn (mut app App) move_up() {
     for j := 0; j < size; j++ {
         mut temp_arr := []int{cap: size}
         for i := 0; i < size; i++ {
-            if game.matrix[i][j] != 0 {
-                temp_arr << game.matrix[i][j]
+            if app.matrix[i][j] != 0 {
+                temp_arr << app.matrix[i][j]
             }
         }
         for i := 0; i < size; i++ {
-            game.matrix[i][j] = temp_arr[i] or { 0 }
+            app.matrix[i][j] = temp_arr[i] or { 0 }
         }
         for i := 0; i < size - 1; i++ {
-            if game.matrix[i][j] != 0 {
-                if game.matrix[i][j] == game.matrix[i + 1][j] {
-                    game.matrix[i][j] *= 2
-                    game.matrix[i + 1][j] = 0
-                    game.score += game.matrix[i][j]
+            if app.matrix[i][j] != 0 {
+                if app.matrix[i][j] == app.matrix[i + 1][j] {
+                    app.matrix[i][j] *= 2
+                    app.matrix[i + 1][j] = 0
+                    app.score += app.matrix[i][j]
                     i++
                 }
             }
         }
         temp_arr.clear()
         for i := 0; i < size; i++ {
-            if game.matrix[i][j] != 0 {
-                temp_arr << game.matrix[i][j]
+            if app.matrix[i][j] != 0 {
+                temp_arr << app.matrix[i][j]
             }
         }
         for i := 0; i < size; i++ {
-            game.matrix[i][j] = temp_arr[i] or { 0 }
+            app.matrix[i][j] = temp_arr[i] or { 0 }
         }
     }
 }
 
-fn (mut game Game) move_down() {
+fn (mut app App) move_down() {
     for j := 0; j < size; j++ {
         mut temp_arr := []int{cap: size}
         for i := 0; i < size; i++ {
-            if game.matrix[i][j] != 0 {
-                temp_arr << game.matrix[i][j]
+            if app.matrix[i][j] != 0 {
+                temp_arr << app.matrix[i][j]
             }
         }
         for i := 0; i < size; i++ {
-            game.matrix[size - i - 1][j] = temp_arr[i] or { 0 }
+            app.matrix[size - i - 1][j] = temp_arr[i] or { 0 }
         }
         for i := size - 1; i > 0; i-- {
-            if game.matrix[i][j] != 0 {
-                if game.matrix[i][j] == game.matrix[i - 1][j] {
-                    game.matrix[i][j] *= 2
-                    game.matrix[i - 1][j] = 0
-                    game.score += game.matrix[i][j]
+            if app.matrix[i][j] != 0 {
+                if app.matrix[i][j] == app.matrix[i - 1][j] {
+                    app.matrix[i][j] *= 2
+                    app.matrix[i - 1][j] = 0
+                    app.score += app.matrix[i][j]
                     i--
                 }
             }
         }
         temp_arr.clear()
         for i := 0; i < size; i++ {
-            if game.matrix[i][j] != 0 {
-                temp_arr << game.matrix[i][j]
+            if app.matrix[i][j] != 0 {
+                temp_arr << app.matrix[i][j]
             }
         }
         for i := 0; i < size; i++ {
-            game.matrix[size - i - 1][j] = temp_arr[i] or { 0 }
+            app.matrix[size - i - 1][j] = temp_arr[i] or { 0 }
         }
     }
 }
