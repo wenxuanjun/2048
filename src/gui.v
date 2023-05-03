@@ -29,6 +29,9 @@ const (
 			gx.rgb(60, 58, 50)
 		]
     }
+    default_width = 465
+    default_height = 500
+    window_title = "2048"
 )
 
 struct Theme {
@@ -36,6 +39,13 @@ struct Theme {
 	container_color gx.Color
 	text_color fn (int) gx.Color
 	tile_colors []gx.Color
+}
+
+struct Gui {
+mut:
+	game &Game
+    gg &gg.Context
+    window Window
 }
 
 struct Window {
@@ -51,48 +61,57 @@ mut:
 	y_offset int
 }
 
-fn (mut game App) gui_init() {
-	game.gg = gg.new_context(
+fn gui_init(game &Game) &Gui {
+	mut gui := &Gui{
+		gg: 0
+		game: game
+	}
+	gui.gg = gg.new_context(
 		width: default_width
         height: default_height
         window_title: window_title
         bg_color: theme.bakground_color
         event_fn: on_event
         frame_fn: on_frame
-        user_data: game
-        init_fn: fn (mut game App) {
-            game.on_resize()
+        user_data: gui
+        init_fn: fn (mut gui Gui) {
+            gui.on_resize()
         }
 	)
+	return gui
 }
 
-fn on_event(e &gg.Event, mut game App) {
+fn on_event(e &gg.Event, mut gui Gui) {
     match e.typ {
         .key_down {
-            game.step(e.key_code)
+			dir := get_dir(e.key_code)
+            gui.game.step(dir or { return })
         }
         .resized, .restored, .resumed {
-            game.on_resize()
+            gui.on_resize()
         }
         else {}
     }
 }
 
-fn on_frame(mut app App) {
-	app.gg.begin()
-    app.draw_tiles()
-	app.gg.end()
+fn on_frame(mut gui Gui) {
+	gui.gg.begin()
+    gui.draw_tiles()
+	if gui.game.ai_mode {
+		gui.game.ai_move()
+	}
+	gui.gg.end()
 }
 
-fn (mut app App) on_resize() {
-	window_size := app.gg.window_size()
+fn (mut gui Gui) on_resize() {
+	window_size := gui.gg.window_size()
 	width := window_size.width
     // Left a little space for score
     left_ratio := f32(default_width) / f32(default_height)
 	height := int(f32(window_size.height) * left_ratio)
     // Choose the smaller one as the container size
 	min := f32(math.min(width, height))
-    app.window = Window{
+    gui.window = Window{
         width: width
         height: height
         padding_size: int(min / 32)
@@ -101,39 +120,39 @@ fn (mut app App) on_resize() {
         font_size: int(min / 8)
     }
     // Pre-calculate padding
-    app.window.y_offset = window_size.height - height
+    gui.window.y_offset = window_size.height - height
     // Center when width not equal to height
     if width > height {
-        app.window.x_offset += (width - height) / 2
+        gui.window.x_offset += (width - height) / 2
     } else {
-        app.window.y_offset += (height - width) / 2
+        gui.window.y_offset += (height - width) / 2
     }
 }
 
-fn (app &App) draw_tiles() {
+fn (gui Gui) draw_tiles() {
     // Calculate the real position of the container
-	x_start := app.window.x_offset + app.window.border_size
-	y_start := app.window.y_offset + app.window.border_size
+	x_start := gui.window.x_offset + gui.window.border_size
+	y_start := gui.window.y_offset + gui.window.border_size
 
     // The length a tile takes and the size of the container
-	tile_offset := app.window.tile_size + app.window.padding_size
-	cont_size := math.min(app.window.width, app.window.height) - app.window.border_size * 2
+	tile_offset := gui.window.tile_size + gui.window.padding_size
+	cont_size := math.min(gui.window.width, gui.window.height) - gui.window.border_size * 2
     cont_radius, cont_color := cont_size / 48, theme.container_color
-	app.gg.draw_rounded_rect_filled(x_start, y_start, cont_size, cont_size, cont_radius, cont_color)
+	gui.gg.draw_rounded_rect_filled(x_start, y_start, cont_size, cont_size, cont_radius, cont_color)
 
 	for y in 0..size {
 		for x in 0..size {
-			tile_value := app.matrix[y][x]
+			tile_value := gui.game.matrix[y][x]
             index := if tile_value == 0 {0} else {int(math.log2(tile_value))}
 			tile_color := if index < theme.tile_colors.len {
 				theme.tile_colors[index]
 			} else {
 				theme.tile_colors.last()
 			}
-            tile_size := app.window.tile_size
-			x_tile := x_start + app.window.padding_size + x * tile_offset
-			y_tile := y_start + app.window.padding_size + y * tile_offset
-			app.gg.draw_rounded_rect_filled(x_tile, y_tile, tile_size, tile_size, tile_size / 16, tile_color)
+            tile_size := gui.window.tile_size
+			x_tile := x_start + gui.window.padding_size + x * tile_offset
+			y_tile := y_start + gui.window.padding_size + y * tile_offset
+			gui.gg.draw_rounded_rect_filled(x_tile, y_tile, tile_size, tile_size, tile_size / 16, tile_color)
 
             // Draw the number of the tile
 			if tile_value != 0 {
@@ -143,9 +162,13 @@ fn (app &App) draw_tiles() {
 			    	color: theme.text_color(tile_value)
 			    	align: .center
 			    	vertical_align: .middle
-			    	size: app.window.font_size
+			    	size: if tile_value < 1024 {
+						gui.window.font_size
+					} else {
+						gui.window.font_size * 3 / 4
+					}
 			    }
-				app.gg.draw_text(x_font, y_font, '${tile_value}', format)
+				gui.gg.draw_text(x_font, y_font, '${tile_value}', format)
 			}
 		}
 	}
@@ -155,8 +178,8 @@ fn (app &App) draw_tiles() {
 		color: gx.black
 		align: .left
 		vertical_align: .middle
-		size: app.window.font_size / 2
+		size: gui.window.font_size / 2
 	}
     y_lable := y_start / 2
-    app.gg.draw_text(x_start, y_lable, 'Points: ${app.score}', score_format)
+    gui.gg.draw_text(x_start, y_lable, 'Points: ${gui.game.score}', score_format)
 }

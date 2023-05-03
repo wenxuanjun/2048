@@ -1,33 +1,28 @@
 module main
 
-import gg
+import os
+import flag
 
-const (
-    size = 4
-    init_number_count = 2
-    default_width = 465
-    default_height = 500
-    window_title = "2048"
-)
-
-[heap]
 struct App {
 mut:
-    score int
-    gg &gg.Context
-    matrix [][]int
-    can_move CanMove
-    window Window
+    gui Gui
+    game Game
 }
 
 fn main() {
-    mut app := &App {
-        gg: 0
-        score: 0
-        matrix: [][]int{}
-        can_move: &CanMove{}
+    mut fp := flag.new_flag_parser(os.args)
+    fp.skip_executable()
+    ai_mode := fp.bool("ai", `a`, false, "enable ai mode")
+
+    fp.finalize() or {
+        println(fp.usage())
+        return
     }
-    app.gui_init()
-    app.game_init()
-    app.gg.run()
+
+    game := game_init(ai_mode)
+    mut app := &App {
+        game: game,
+        gui: gui_init(*game),
+    }
+    app.gui.gg.run()
 }
