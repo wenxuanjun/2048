@@ -14,7 +14,7 @@ fn main() {
     fp.skip_executable()
     ai_mode := fp.bool("ai", `a`, false, "use AI to perform moves")
     enable_gui := fp.bool("gui", `g`, false, "run AI if GUI disabled")
-    move_log := fp.bool("log", `l`, false, "log moves to stdout")
+    move_log := fp.bool("log", `l`, false, "log moves, disabled when AI enabled")
 
     fp.finalize() or {
         println(fp.usage())
