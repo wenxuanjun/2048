@@ -30,12 +30,13 @@ fn game_init(ai_mode bool) &Game {
 		ai_mode: ai_mode
 	}
 
+	// Initialize the matrix
 	game.matrix = [][]int{
         len: size,
         init: []int{len: size}
     }
 
-	// 生成最开始的数字
+	// Generate the init numbers
     for _ in 0 .. init_number_count {
         game.generate_number()
     }
@@ -60,25 +61,24 @@ fn (mut game Game) clone() &Game {
 }
 
 fn (mut game Game) step(dir Direction) {
-	// 判断是否可以移动，否则直接返回
-	if game.can_move.query(dir) {
-		game.move(dir)
-	} else {
+	// Return directly if cannot move
+	if !game.can_move.query(dir) {
 		return
 	}
 
-	// 生成新的数字并刷新可移动状态
+	// Move, spawn new number and refresh move status
+	game.move(dir)
 	game.generate_number()
 	game.refresh_move_status()
 
-	// 打印矩阵和状态
+	// Print the matrix and status
 	if !game.ai_mode {
 		println('Score: ' + game.score.str())
 		game.print_board_matrix()
 		println('Status: ${game.can_move}')
 	}
 
-	// 判断游戏是否结束
+	// Judge whether the game is over
 	if !game.can_move.exist() {
 		println('Game Over!')
 		println('Final score: ${game.score}')
@@ -98,17 +98,19 @@ fn get_dir(key gg.KeyCode) ?Direction {
 }
 
 fn (mut game Game) generate_number() {
-	mut empty_cells := []int{}
+	mut empty_count := 0
+	mut cells := []int{ len: size * size }
 	for i in 0 .. size {
 		for j in 0 .. size {
 			if game.matrix[i][j] == 0 {
-				empty_cells << i * size + j
+				cells[empty_count] = i * size + j
+				empty_count++
 			}
 		}
 	}
-	if empty_cells.len > 0 {
-		index := empty_cells[rand.intn(empty_cells.len) or { 0 }]
-		random := rand.f64n(1.0) or { 0.0 }
+	if empty_count > 0 {
+		index := cells[rand.u8() % empty_count]
+		random := rand.f32n(1.0) or { 0.0 }
 		game.matrix[index / size][index % size] = if random < 0.9 { 2 } else { 4 }
 	}
 }
@@ -116,10 +118,10 @@ fn (mut game Game) generate_number() {
 [inline]
 fn (mut game Game) refresh_move_status() {
 	game.can_move = &CanMove{
-		left: game.can_move(.left)
-		right: game.can_move(.right)
-		up: game.can_move(.up)
-		down: game.can_move(.down)
+		left: game.can_move_left()
+		right: game.can_move_right()
+		up: game.can_move_up()
+		down: game.can_move_down()
 	}
 }
 

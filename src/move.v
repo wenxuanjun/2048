@@ -30,14 +30,18 @@ fn (mut game Game) move(dir Direction) {
 
 fn (mut game Game) move_left() {
     for i := 0; i < size; i++ {
-        mut temp_arr := []int{cap: size}
+        mut pointer := 0
         for j := 0; j < size; j++ {
             if game.matrix[i][j] != 0 {
-                temp_arr << game.matrix[i][j]
+                game.matrix[i][pointer] = game.matrix[i][j]
+                pointer++
             }
         }
-        for j := 0; j < size; j++ {
-            game.matrix[i][j] = temp_arr[j] or { 0 }
+        if pointer == 0 {
+            continue
+        }
+        for j := pointer; j < size; j++ {
+            game.matrix[i][j] = 0
         }
         for j := 0; j < size - 1; j++ {
             if game.matrix[i][j] != 0 {
@@ -49,31 +53,33 @@ fn (mut game Game) move_left() {
                 }
             }
         }
-        temp_arr.clear()
+        pointer = 0
         for j := 0; j < size; j++ {
             if game.matrix[i][j] != 0 {
-                temp_arr << game.matrix[i][j]
+                game.matrix[i][pointer] = game.matrix[i][j]
+                pointer++
             }
         }
-        for j := 0; j < size; j++ {
-            game.matrix[i][j] = temp_arr[j] or { 0 }
-        }   
+        for j := pointer; j < size; j++ {
+            game.matrix[i][j] = 0
+        } 
     }
 }
 
 fn (mut game Game) move_right() {
     for i := 0; i < size; i++ {
-        mut temp_arr := []int{cap: size}
+        mut pointer := size - 1
         for j := size - 1; j >= 0; j-- {
             if game.matrix[i][j] != 0 {
-                temp_arr << game.matrix[i][j]
+                game.matrix[i][pointer] = game.matrix[i][j]
+                pointer--
             }
         }
-        if temp_arr.len == 0 {
+        if pointer == size - 1 {
             continue
         }
-        for j := size - 1; j >= 0; j-- {
-            game.matrix[i][j] = temp_arr[size - j - 1] or { 0 }
+        for j := pointer; j >= 0; j-- {
+            game.matrix[i][j] = 0
         }
         for j := size - 1; j > 0; j-- {
             if game.matrix[i][j] != 0 {
@@ -85,31 +91,33 @@ fn (mut game Game) move_right() {
                 }
             }
         }
-        temp_arr.clear()
+        pointer = size - 1
         for j := size - 1; j >= 0; j-- {
             if game.matrix[i][j] != 0 {
-                temp_arr << game.matrix[i][j]
+                game.matrix[i][pointer] = game.matrix[i][j]
+                pointer--
             }
         }
-        for j := size - 1; j >= 0; j-- {
-            game.matrix[i][j] = temp_arr[size - j - 1] or { 0 }
+        for j := pointer; j >= 0; j-- {
+            game.matrix[i][j] = 0
         }
     }
 }
 
 fn (mut game Game) move_up() {
     for j := 0; j < size; j++ {
-        mut temp_arr := []int{cap: size}
+        mut pointer := 0
         for i := 0; i < size; i++ {
             if game.matrix[i][j] != 0 {
-                temp_arr << game.matrix[i][j]
+                game.matrix[pointer][j] = game.matrix[i][j]
+                pointer++
             }
         }
-        if temp_arr.len == 0 {
+        if pointer == 0 {
             continue
         }
-        for i := 0; i < size; i++ {
-            game.matrix[i][j] = temp_arr[i] or { 0 }
+        for i := pointer; i < size; i++ {
+            game.matrix[i][j] = 0
         }
         for i := 0; i < size - 1; i++ {
             if game.matrix[i][j] != 0 {
@@ -121,31 +129,33 @@ fn (mut game Game) move_up() {
                 }
             }
         }
-        temp_arr.clear()
+        pointer = 0
         for i := 0; i < size; i++ {
             if game.matrix[i][j] != 0 {
-                temp_arr << game.matrix[i][j]
+                game.matrix[pointer][j] = game.matrix[i][j]
+                pointer++
             }
         }
-        for i := 0; i < size; i++ {
-            game.matrix[i][j] = temp_arr[i] or { 0 }
+        for i := pointer; i < size; i++ {
+            game.matrix[i][j] = 0
         }
     }
 }
 
 fn (mut game Game) move_down() {
     for j := 0; j < size; j++ {
-        mut temp_arr := []int{cap: size}
+        mut pointer := size - 1
         for i := size - 1; i >= 0; i-- {
             if game.matrix[i][j] != 0 {
-                temp_arr << game.matrix[i][j]
+                game.matrix[pointer][j] = game.matrix[i][j]
+                pointer--
             }
         }
-        if temp_arr.len == 0 {
+        if pointer == size - 1 {
             continue
         }
-        for i := size - 1; i >= 0; i-- {
-            game.matrix[i][j] = temp_arr[size - i - 1] or { 0 }
+        for i := pointer; i >= 0; i-- {
+            game.matrix[i][j] = 0
         }
         for i := size - 1; i > 0; i-- {
             if game.matrix[i][j] != 0 {
@@ -157,14 +167,15 @@ fn (mut game Game) move_down() {
                 }
             }
         }
-        temp_arr.clear()
+        pointer = size - 1
         for i := size - 1; i >= 0; i-- {
             if game.matrix[i][j] != 0 {
-                temp_arr << game.matrix[i][j]
+                game.matrix[pointer][j] = game.matrix[i][j]
+                pointer--
             }
         }
-        for i := size - 1; i >= 0; i-- {
-            game.matrix[i][j] = temp_arr[size - i - 1] or { 0 }
+        for i := pointer; i >= 0; i-- {
+            game.matrix[i][j] = 0
         }
     }
 }

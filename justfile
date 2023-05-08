@@ -10,6 +10,10 @@ build:
 debug flags="":
 	v run . {{flags}}
 
+# Profiling the game
+profile file="profile.txt":
+	v -profile {{file}} -no-bounds-checking run . -a
+
 # Strip the executable binary
 strip:
 	strip 2048*

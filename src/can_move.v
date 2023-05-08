@@ -31,11 +31,9 @@ fn (move CanMove) query(dir Direction) bool {
 }
 
 [inline]
-fn (mut game Game) empty_or_equal(row int, col int, row_next int, col_next int) bool {
-    // 获取当前位置和下一个位置的值
-    current := game.matrix[row][col]
-    next_tile := game.matrix[row_next][col_next]
-    // 当前不为空，下一个为空或当前与下一个相等，则可移动
+fn empty_equal(game &Game, x int, y int, r int, c int) bool {
+    current := game.matrix[x][y]
+    next_tile := game.matrix[r][c]
 	if current != 0 {
 		if next_tile == 0 || current == next_tile {
 			return true
@@ -44,37 +42,44 @@ fn (mut game Game) empty_or_equal(row int, col int, row_next int, col_next int) 
 	return false
 }
 
-fn (mut game Game) can_move(dir Direction) bool {
-    if dir == .left || dir == .right {
-        for i := 0; i < size; i++ {
-            if dir == .left {
-                for j := 1; j < size; j++ {
-                    if game.empty_or_equal(i, j, i, j - 1) {
-                        return true
-                    }
-                }
-            } else {
-                for j := size - 2; j >= 0; j-- {
-                    if game.empty_or_equal(i, j, i, j + 1) {
-                        return true
-                    }
-                }
+fn (mut game Game) can_move_left() bool {
+    for i := 0; i < size; i++ {
+        for j := 1; j < size; j++ {
+            if empty_equal(game, i, j, i, j - 1) {
+                return true
             }
         }
-    } else {
-        for j := 0; j < size; j++ {
-            if dir == .up {
-                for i := 1; i < size; i++ {
-                    if game.empty_or_equal(i, j, i - 1, j) {
-                        return true
-                    }
-                }
-            } else {
-                for i := size - 2; i >= 0; i-- {
-                    if game.empty_or_equal(i, j, i + 1, j) {
-                        return true
-                    }
-                }
+    }
+    return false
+}
+
+fn (mut game Game) can_move_right() bool {
+    for i := 0; i < size; i++ {
+        for j := size - 2; j >= 0; j-- {
+            if empty_equal(game, i, j, i, j + 1) {
+                return true
+            }
+        }
+    }
+    return false
+}
+
+fn (mut game Game) can_move_up() bool {
+    for j := 0; j < size; j++ {
+        for i := 1; i < size; i++ {
+            if empty_equal(game, i, j, i - 1, j) {
+                return true
+            }
+        }
+    }
+    return false
+}
+
+fn (mut game Game) can_move_down() bool {
+    for j := 0; j < size; j++ {
+        for i := size - 2; i >= 0; i-- {
+            if empty_equal(game, i, j, i + 1, j) {
+                return true
             }
         }
     }

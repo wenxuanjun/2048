@@ -117,7 +117,7 @@ fn (mut gui Gui) on_resize() {
 	// Padding is the width between tiles
 	padding_size, border_size := int(min / 40), int(min / 32)
 	// Use these params to calc tile size
-    gui.window = Window{
+    gui.window = &Window{
         width: width
         height: height
         padding_size: padding_size
@@ -164,7 +164,7 @@ fn (gui Gui) draw_tiles() {
 			if tile_value != 0 {
 				x_font := x_tile + tile_size / 2
 				y_font := y_tile + tile_size / 2
-				format := gx.TextCfg{
+				format := &gx.TextCfg{
 			    	color: theme.text_color(tile_value)
 			    	align: .center
 			    	vertical_align: .middle
@@ -180,7 +180,7 @@ fn (gui Gui) draw_tiles() {
 	}
 
     // Draw the score of the game
-    score_format := gx.TextCfg{
+    score_format := &gx.TextCfg{
 		color: gx.black
 		align: .left
 		vertical_align: .middle

@@ -9,8 +9,8 @@ mut:
 
 const (
 	directions = [Direction.up, .down, .left, .right]
-	pred_per_move = 250
-	pred_depth = 15
+	pred_per_move = 1000
+	pred_depth = 20
 )
 
 fn (mut game Game) ai_move() {
@@ -22,7 +22,7 @@ fn (mut game Game) ai_move() {
 			continue
 		}
 		preds[int(dir)].move = dir
-		mut all_move_score := 0
+		mut all_score := 0
 		for _ in 0 .. pred_per_move {
 			if !game.can_move.query(dir) {
 				continue
@@ -33,17 +33,16 @@ fn (mut game Game) ai_move() {
 			if !temp_game.can_move.exist() {
 				continue
 			}
-			all_move_score += temp_game.score
 			temp_game.generate_number()
+			all_score += temp_game.score
 			mut move_depth := 0
 			for temp_game.can_move.exist() {
-				index := rand.intn(directions.len) or { 0 }
+				index := rand.u8() % directions.len
 				rand_dir := directions[index]
-				if temp_game.can_move.query(rand_dir) {
-					temp_game.move(rand_dir)
-				} else {
+				if !temp_game.can_move.query(rand_dir) {
 					continue
 				}
+				temp_game.move(rand_dir)
 				temp_game.refresh_move_status()
 				temp_game.generate_number()
 				move_depth++
@@ -51,9 +50,9 @@ fn (mut game Game) ai_move() {
 					break
 				}
 			}
-			all_move_score += temp_game.score
+			all_score += temp_game.score
 		}
-		preds[int(dir)].move_score = f64(all_move_score) / pred_per_move
+		preds[int(dir)].move_score = f64(all_score) / pred_per_move
 	}
 	think_time := think_watch.elapsed().milliseconds()
 
