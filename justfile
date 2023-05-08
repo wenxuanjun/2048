@@ -1,13 +1,17 @@
 # Debug without bounds checking
-run flags="":
+run *flags:
 	v -no-bounds-checking run . {{flags}}
+
+# Play the game with GUI
+play:
+	v -no-bounds-checking run . -g -l
 
 # Build the project
 build:
 	v -prod -skip-unused -no-bounds-checking -show-timings .
 
 # Debug with bounds checking
-debug flags="":
+debug *flags:
 	v run . {{flags}}
 
 # Profiling the game

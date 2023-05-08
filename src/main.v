@@ -12,17 +12,31 @@ mut:
 fn main() {
     mut fp := flag.new_flag_parser(os.args)
     fp.skip_executable()
-    ai_mode := fp.bool("ai", `a`, false, "enable ai mode")
+    ai_mode := fp.bool("ai", `a`, false, "use AI to perform moves")
+    enable_gui := fp.bool("gui", `g`, false, "run AI if GUI disabled")
+    move_log := fp.bool("log", `l`, false, "log moves to stdout")
 
     fp.finalize() or {
         println(fp.usage())
         return
     }
 
-    game := game_init(ai_mode)
-    mut app := &App {
-        game: game,
-        gui: gui_init(*game),
+    config := &GameConfig {
+        ai_mode: ai_mode,
+        move_log: move_log,
     }
-    app.gui.gg.run()
+
+    mut game := game_init(config)
+
+    if enable_gui {
+        mut app := &App {
+            game: game,
+            gui: gui_init(*game),
+        }
+        app.gui.gg.run()
+    } else {
+        for {
+            game.ai_move()
+        }
+    }
 }

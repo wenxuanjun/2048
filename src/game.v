@@ -19,15 +19,20 @@ mut:
     score int
     matrix [][]int
     can_move CanMove
-	ai_mode bool
+	config GameConfig
 }
 
-fn game_init(ai_mode bool) &Game {
+struct GameConfig {
+	ai_mode bool
+	move_log bool
+}
+
+fn game_init(config GameConfig) &Game {
 	mut game := &Game{
         score: 0
         matrix: [][]int{}
         can_move: &CanMove{}
-		ai_mode: ai_mode
+		config: config
 	}
 
 	// Initialize the matrix
@@ -55,7 +60,7 @@ fn (mut game Game) clone() &Game {
 			up: game.can_move.up
 			down: game.can_move.down
 		}
-		ai_mode: game.ai_mode
+		config: game.config
 	}
 	return new_game
 }
@@ -72,7 +77,7 @@ fn (mut game Game) step(dir Direction) {
 	game.refresh_move_status()
 
 	// Print the matrix and status
-	if !game.ai_mode {
+	if !game.config.ai_mode && game.config.move_log {
 		println('Score: ' + game.score.str())
 		game.print_board_matrix()
 		println('Status: ${game.can_move}')

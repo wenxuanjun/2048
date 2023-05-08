@@ -1,5 +1,6 @@
 import time
 import rand
+import term
 
 struct Prediction {
 mut:
@@ -7,10 +8,16 @@ mut:
 	move_score f64
 }
 
+struct AiLog {
+	think_time i64
+	move Direction
+	move_score f64
+}
+
 const (
 	directions = [Direction.up, .down, .left, .right]
 	pred_per_move = 500
-	pred_depth = 25
+	pred_depth = 20
 )
 
 fn (mut game Game) ai_move() {
@@ -64,6 +71,22 @@ fn (mut game Game) ai_move() {
 			best_move = preds[move_idx].move
 		}
 	}
-	println('Time: ${think_time}ms | move: ${best_move} | score: ${max_score}')
+	ai_log := &AiLog{
+		think_time: think_time,
+		move: best_move,
+		move_score: max_score,
+	}
+	game.ai_log(ai_log)
 	game.step(best_move)
+}
+
+fn (mut game Game) ai_log(log AiLog) {
+	// Not clear if show move log
+	if !game.config.move_log {
+		term.clear_previous_line()
+	}
+	print('Score: ${game.score} | ')
+	print('Time: ${log.think_time}ms | ')
+	print('Move: ${log.move} | ')
+	println('Move Score: ${log.move_score}')
 }
