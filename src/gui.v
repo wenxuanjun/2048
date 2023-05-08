@@ -4,15 +4,6 @@ import math
 
 const (
 	theme = &Theme{
-        bakground_color: gx.rgb(250, 248, 239)
-		container_color: gx.rgb(187, 173, 160)
-		text_color: fn (tile_value int) gx.Color {
-            if tile_value < 8 {
-                return gx.rgb(119, 110, 101)
-            } else {
-                return gx.rgb(249, 246, 242)
-            }
-        }
 		tile_colors: [
             gx.rgb(205, 193, 180),
 			gx.rgb(238, 228, 218),
@@ -28,6 +19,15 @@ const (
 			gx.rgb(237, 194, 46),
 			gx.rgb(60, 58, 50)
 		]
+        bakground_color: gx.rgb(250, 248, 239)
+		container_color: gx.rgb(187, 173, 160)
+		text_color: fn (tile_value int) gx.Color {
+            if tile_value < 8 {
+                return gx.rgb(119, 110, 101)
+            } else {
+                return gx.rgb(249, 246, 242)
+            }
+        }
     }
     default_width = 465
     default_height = 500
@@ -114,12 +114,15 @@ fn (mut gui Gui) on_resize() {
 	height := int(f32(window_size.height) * left_ratio)
     // Choose the smaller one as the container size
 	min := f32(math.min(width, height))
+	// Padding is the width between tiles
+	padding_size, border_size := int(min / 40), int(min / 32)
+	// Use these params to calc tile size
     gui.window = Window{
         width: width
         height: height
-        padding_size: int(min / 32)
-        border_size: int(min / 32)
-        tile_size: int((min - min / 32 * 2 - min / 38 * 5) / 4)
+        padding_size: padding_size
+        border_size: border_size
+        tile_size: int((min - border_size * 2 - padding_size * 5) / 4)
         font_size: int(min / 8)
     }
     // Pre-calculate padding
@@ -146,7 +149,7 @@ fn (gui Gui) draw_tiles() {
 	for y in 0..size {
 		for x in 0..size {
 			tile_value := gui.game.matrix[y][x]
-            index := if tile_value == 0 {0} else {int(math.log2(tile_value))}
+            index := if tile_value == 0 { 0 } else { int(math.log2(tile_value)) }
 			tile_color := if index < theme.tile_colors.len {
 				theme.tile_colors[index]
 			} else {
