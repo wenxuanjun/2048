@@ -9,12 +9,20 @@ mut:
     game Game
 }
 
+const (
+    usage = [
+        "use AI to perform moves"
+        "run AI if GUI disabled"
+        "log moves, disabled when AI enabled"
+    ]
+)
+
 fn main() {
     mut fp := flag.new_flag_parser(os.args)
     fp.skip_executable()
-    ai_mode := fp.bool("ai", `a`, false, "use AI to perform moves")
-    enable_gui := fp.bool("gui", `g`, false, "run AI if GUI disabled")
-    move_log := fp.bool("log", `l`, false, "log moves, disabled when AI enabled")
+    ai_mode := fp.bool("ai", `a`, false, usage[0])
+    enable_gui := fp.bool("gui", `g`, false, usage[1])
+    move_log := fp.bool("log", `l`, false, usage[2])
 
     fp.finalize() or {
         println(fp.usage())
