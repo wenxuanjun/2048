@@ -84,6 +84,9 @@ fn gui_init(game &Game) &Gui {
 fn on_event(e &gg.Event, mut gui Gui) {
     match e.typ {
         .key_down {
+			if gui.game.ai_mode {
+				return
+			}
 			dir := get_dir(e.key_code)
             gui.game.step(dir or { return })
         }

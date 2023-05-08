@@ -31,9 +31,7 @@ fn (move CanMove) query(dir Direction) bool {
 }
 
 [inline]
-fn (mut game Game) empty_or_equal(
-    row int, col int, row_next int, col_next int
-) bool {
+fn (mut game Game) empty_or_equal(row int, col int, row_next int, col_next int) bool {
     // 获取当前位置和下一个位置的值
     current := game.matrix[row][col]
     next_tile := game.matrix[row_next][col_next]
