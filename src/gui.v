@@ -184,5 +184,5 @@ fn (gui Gui) draw_tiles() {
 		size: gui.window.font_size / 2
 	}
     y_lable := y_start / 2
-    gui.gg.draw_text(x_start, y_lable, 'Points: ${gui.game.score}', score_format)
+    gui.gg.draw_text(x_start, y_lable, 'Scores: ${gui.game.score}', score_format)
 }

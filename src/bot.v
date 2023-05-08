@@ -18,15 +18,17 @@ fn (mut game Game) ai_move() {
 	think_watch := time.new_stopwatch()
 
 	for dir in directions {
+		if !game.can_move.query(dir) {
+			continue
+		}
 		preds[int(dir)].move = dir
 		mut all_move_score := 0
 		for _ in 0 .. pred_per_move {
-			mut temp_game := game.clone()
-			if temp_game.can_move.query(dir) {
-				temp_game.move(dir)
-			} else {
+			if !game.can_move.query(dir) {
 				continue
 			}
+			mut temp_game := game.clone()
+			temp_game.move(dir)
 			temp_game.refresh_move_status()
 			if !temp_game.can_move.exist() {
 				continue
