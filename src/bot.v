@@ -9,8 +9,8 @@ mut:
 
 const (
 	directions = [Direction.up, .down, .left, .right]
-	pred_per_move = 1000
-	pred_depth = 20
+	pred_per_move = 500
+	pred_depth = 25
 )
 
 fn (mut game Game) ai_move() {

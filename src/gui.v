@@ -122,7 +122,7 @@ fn (mut gui Gui) on_resize() {
         height: height
         padding_size: padding_size
         border_size: border_size
-        tile_size: int((min - border_size * 2 - padding_size * 5) / 4)
+        tile_size: int((min - border_size * 2 - padding_size * (size + 1)) / size)
         font_size: int(min / 8)
     }
     // Pre-calculate padding
