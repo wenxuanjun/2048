@@ -8,10 +8,9 @@ mut:
 	move_score f64
 }
 
-struct AiLog {
+struct AiPerform {
+	prediction Prediction
 	think_time i64
-	move Direction
-	move_score f64
 }
 
 const (
@@ -21,15 +20,14 @@ const (
 )
 
 fn (mut game Game) ai_move() {
-	mut preds := [4]Prediction{}
+	mut predictions := [4]Prediction{}
 	think_watch := time.new_stopwatch()
-
 	for dir in directions {
 		if !game.can_move.query(dir) {
 			continue
 		}
-		preds[int(dir)].move = dir
 		mut all_score := 0
+		predictions[int(dir)].move = dir
 		for _ in 0 .. pred_per_move {
 			if !game.can_move.query(dir) {
 				continue
@@ -59,34 +57,29 @@ fn (mut game Game) ai_move() {
 			}
 			all_score += temp_game.score
 		}
-		preds[int(dir)].move_score = f64(all_score) / pred_per_move
+		predictions[int(dir)].move_score = f64(all_score) / pred_per_move
 	}
-	think_time := think_watch.elapsed().milliseconds()
-
-	mut max_score := -1.0
-	mut best_move := Direction.up
-	for move_idx in 0 .. directions.len {
-		if max_score < preds[move_idx].move_score {
-			max_score = preds[move_idx].move_score
-			best_move = preds[move_idx].move
+	mut best_pred := predictions[0]
+	for prediction in predictions {
+		if best_pred.move_score < prediction.move_score {
+			best_pred = prediction
 		}
 	}
-	ai_log := &AiLog{
-		think_time: think_time,
-		move: best_move,
-		move_score: max_score,
+	ai_perform := &AiPerform{
+		prediction: &best_pred,
+		think_time: think_watch.elapsed().milliseconds(),
 	}
-	game.ai_log(ai_log)
-	game.step(best_move)
+	game.ai_perform(ai_perform)
 }
 
-fn (mut game Game) ai_log(log AiLog) {
-	// Not clear if show move log
-	if !game.config.move_log {
+fn (mut game Game) ai_perform(perform AiPerform) {
+	if !game.config.move_log && game.moves != 0 {
 		term.clear_previous_line()
 	}
 	print('Score: ${game.score} | ')
-	print('Time: ${log.think_time}ms | ')
-	print('Move: ${log.move} | ')
-	println('Move Score: ${log.move_score}')
+	print('Moves: ${game.moves} | ')
+	print('Time: ${perform.think_time}ms | ')
+	print('Move: ${perform.prediction.move} | ')
+	println('Move Score: ${perform.prediction.move_score}')
+	game.step(perform.prediction.move)
 }

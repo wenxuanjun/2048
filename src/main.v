@@ -12,7 +12,7 @@ mut:
 const (
     usage = [
         "use AI to perform moves"
-        "run AI if GUI disabled"
+        "always run AI if GUI disabled"
         "log moves, disabled when AI enabled"
     ]
 )

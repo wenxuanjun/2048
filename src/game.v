@@ -17,6 +17,7 @@ enum Direction {
 struct Game {
 mut:
     score int
+	moves int
     matrix [][]int
     can_move CanMove
 	config GameConfig
@@ -30,6 +31,7 @@ struct GameConfig {
 fn game_init(config GameConfig) &Game {
 	mut game := &Game{
         score: 0
+		moves: 0
         matrix: [][]int{}
         can_move: &CanMove{}
 		config: config
@@ -75,6 +77,7 @@ fn (mut game Game) step(dir Direction) {
 	game.move(dir)
 	game.generate_number()
 	game.refresh_move_status()
+	game.moves++
 
 	// Print the matrix and status
 	if !game.config.ai_mode && game.config.move_log {
@@ -86,6 +89,7 @@ fn (mut game Game) step(dir Direction) {
 	// Judge whether the game is over
 	if !game.can_move.exist() {
 		println('Game Over!')
+		game.print_board_matrix()
 		println('Final score: ${game.score}')
 		exit(0)
 	}

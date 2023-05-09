@@ -8,7 +8,7 @@ play:
 
 # Build the project
 build:
-	v -prod -skip-unused -no-bounds-checking -show-timings .
+	v -prod -skip-unused -no-bounds-checking -show-timings -cflags "-flto" .
 
 # Debug with bounds checking
 debug *flags:

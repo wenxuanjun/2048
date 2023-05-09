@@ -188,4 +188,13 @@ fn (gui Gui) draw_tiles() {
 	}
     y_lable := y_start / 2
     gui.gg.draw_text(x_start, y_lable, 'Scores: ${gui.game.score}', score_format)
+
+	move_format := &gx.TextCfg{
+		color: gx.black
+		align: .right
+		vertical_align: .middle
+		size: gui.window.font_size / 2
+	}
+	x_lable := gui.window.width - x_start
+	gui.gg.draw_text(x_lable, y_lable, 'Moves: ${gui.game.moves}', move_format)
 }
