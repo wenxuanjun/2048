@@ -3,7 +3,7 @@ import term
 
 const (
 	directions = [Direction.up, .down, .left, .right]
-	dfs_pred_per_move = 300
+	dfs_pred_per_move = 500
 	dfs_pred_depth = 25
 )
 

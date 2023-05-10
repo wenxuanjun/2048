@@ -107,15 +107,20 @@ fn on_frame(mut gui Gui) {
 }
 
 fn (mut gui Gui) on_resize() {
+	// Get the window size
 	window_size := gui.gg.window_size()
 	width := window_size.width
+
     // Left a little space for score
     left_ratio := f32(default_width) / f32(default_height)
 	height := int(f32(window_size.height) * left_ratio)
+
     // Choose the smaller one as the container size
 	min := f32(math.min(width, height))
+
 	// Padding is the width between tiles
 	padding_size, border_size := int(min / 40), int(min / 32)
+
 	// Use these params to calc tile size
     gui.window = &Window{
         width: width
@@ -125,8 +130,10 @@ fn (mut gui Gui) on_resize() {
         tile_size: int((min - border_size * 2 - padding_size * (size + 1)) / size)
         font_size: int(min / 8)
     }
+
     // Pre-calculate padding
     gui.window.y_offset = window_size.height - height
+
     // Center when width not equal to height
     if width > height {
         gui.window.x_offset += (width - height) / 2
@@ -189,6 +196,7 @@ fn (gui Gui) draw_tiles() {
     y_lable := y_start / 2
     gui.gg.draw_text(x_start, y_lable, 'Scores: ${gui.game.score}', score_format)
 
+	// Draw the moves of the game
 	move_format := &gx.TextCfg{
 		color: gx.black
 		align: .right
