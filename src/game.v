@@ -26,6 +26,7 @@ mut:
 struct GameConfig {
 	ai_mode bool
 	move_log bool
+	ai_algo AiAlgo
 mut:
 	rng rand.PRNG
 }

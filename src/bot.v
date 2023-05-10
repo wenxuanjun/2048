@@ -1,6 +1,12 @@
 import time
 import term
 
+const (
+	directions = [Direction.up, .down, .left, .right]
+	dfs_pred_per_move = 300
+	dfs_pred_depth = 25
+)
+
 struct Prediction {
 mut:
 	move Direction
@@ -12,22 +18,58 @@ struct AiPerform {
 	think_time i64
 }
 
-const (
-	directions = [Direction.up, .down, .left, .right]
-	pred_per_move = 500
-	pred_depth = 25
-)
+enum AiAlgo {
+	dfs
+	abpruning
+	mdp
+	reinforcement
+}
+
+fn algo_from_str(str string) AiAlgo {
+	return match str {
+		"dfs" { AiAlgo.dfs }
+		"abpruning" { AiAlgo.abpruning }
+		"mdp" { AiAlgo.mdp }
+		"reinforcement" { AiAlgo.reinforcement }
+		else { eprintln("Invalid AI algorithm!") exit(1) }
+	}
+}
 
 fn (mut game Game) ai_move() {
-	mut predictions := [4]Prediction{}
 	think_watch := time.new_stopwatch()
+	prediction := match game.config.ai_algo {
+		.dfs { game.ai_dfs() }
+		else { eprintln("This algo is not implemented yet!") exit(1) }
+	}
+	think_time := think_watch.elapsed()
+	ai_perform := &AiPerform{
+		prediction: prediction,
+		think_time: think_time.milliseconds(),
+	}
+	game.ai_perform(ai_perform)
+}
+
+fn (mut game Game) ai_perform(perform AiPerform) {
+	if !game.config.move_log && game.moves != 0 {
+		term.clear_previous_line()
+	}
+	print('Score: ${game.score} | ')
+	print('Moves: ${game.moves} | ')
+	print('Time: ${perform.think_time}ms | ')
+	print('Move: ${perform.prediction.move} | ')
+	println('Move Score: ${perform.prediction.move_score}')
+	game.step(perform.prediction.move)
+}
+
+fn (mut game Game) ai_dfs() Prediction {
+	mut predictions := [4]Prediction{}
 	for dir in directions {
 		if !game.can_move.query(dir) {
 			continue
 		}
 		mut all_score := 0
 		predictions[int(dir)].move = dir
-		for _ in 0 .. pred_per_move {
+		for _ in 0 .. dfs_pred_per_move {
 			if !game.can_move.query(dir) {
 				continue
 			}
@@ -50,35 +92,19 @@ fn (mut game Game) ai_move() {
 				temp_game.refresh_move_status()
 				temp_game.generate_number()
 				move_depth++
-				if move_depth > pred_depth {
+				if move_depth > dfs_pred_depth {
 					break
 				}
 			}
 			all_score += temp_game.score
 		}
-		predictions[int(dir)].move_score = f64(all_score) / pred_per_move
+		predictions[int(dir)].move_score = f64(all_score) / dfs_pred_per_move
 	}
-	mut best_pred := predictions[0]
-	for prediction in predictions {
-		if best_pred.move_score < prediction.move_score {
-			best_pred = prediction
+	mut prediction := predictions[0]
+	for pred in predictions {
+		if prediction.move_score < pred.move_score {
+			prediction = pred
 		}
 	}
-	ai_perform := &AiPerform{
-		prediction: &best_pred,
-		think_time: think_watch.elapsed().milliseconds(),
-	}
-	game.ai_perform(ai_perform)
-}
-
-fn (mut game Game) ai_perform(perform AiPerform) {
-	if !game.config.move_log && game.moves != 0 {
-		term.clear_previous_line()
-	}
-	print('Score: ${game.score} | ')
-	print('Moves: ${game.moves} | ')
-	print('Time: ${perform.think_time}ms | ')
-	print('Move: ${perform.prediction.move} | ')
-	println('Move Score: ${perform.prediction.move_score}')
-	game.step(perform.prediction.move)
+	return prediction
 }

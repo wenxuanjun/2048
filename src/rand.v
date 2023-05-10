@@ -5,6 +5,14 @@ import rand.mt19937
 import rand.xoroshiro128pp
 import rand.wyrand
 
+[inline]
+fn list_prng() {
+	prng_names := ["pcg32" "mt19937" "xoroshiro128pp" "wyrand"]
+	println("Available random number generators:")
+    for name in prng_names { println("    " + name) }
+}
+
+[inline]
 fn get_prng(algo string) &rand.PRNG {
 	match algo {
 		"pcg32" {
@@ -19,6 +27,6 @@ fn get_prng(algo string) &rand.PRNG {
 		"wyrand" {
 			return &rand.PRNG(wyrand.WyRandRNG{})
 		}
-		else { panic("Unknown PRNG!") }
+		else { eprintln("Unknown PRNG!") exit(1) }
 	}
 }
