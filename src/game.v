@@ -26,6 +26,8 @@ mut:
 struct GameConfig {
 	ai_mode bool
 	move_log bool
+mut:
+	rng rand.PRNG
 }
 
 fn game_init(config GameConfig) &Game {
@@ -107,7 +109,7 @@ fn get_dir(key gg.KeyCode) ?Direction {
 }
 
 fn (mut game Game) generate_number() {
-	mut empty_count := 0
+	mut empty_count := u32(0)
 	mut cells := []int{ len: size * size }
 	for i in 0 .. size {
 		for j in 0 .. size {
@@ -118,8 +120,8 @@ fn (mut game Game) generate_number() {
 		}
 	}
 	if empty_count > 0 {
-		index := cells[rand.u8() % empty_count]
-		random := rand.f32n(1.0) or { 0.0 }
+		index := cells[game.config.rng.u8() % empty_count]
+		random := game.config.rng.f64n(1.0) or { 0.0 }
 		game.matrix[index / size][index % size] = if random < 0.9 { 2 } else { 4 }
 	}
 }

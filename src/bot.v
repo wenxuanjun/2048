@@ -1,5 +1,4 @@
 import time
-import rand
 import term
 
 struct Prediction {
@@ -16,7 +15,7 @@ struct AiPerform {
 const (
 	directions = [Direction.up, .down, .left, .right]
 	pred_per_move = 500
-	pred_depth = 20
+	pred_depth = 25
 )
 
 fn (mut game Game) ai_move() {
@@ -42,7 +41,7 @@ fn (mut game Game) ai_move() {
 			all_score += temp_game.score
 			mut move_depth := 0
 			for temp_game.can_move.exist() {
-				index := rand.u8() % directions.len
+				index := game.config.rng.u8() % directions.len
 				rand_dir := directions[index]
 				if !temp_game.can_move.query(rand_dir) {
 					continue
