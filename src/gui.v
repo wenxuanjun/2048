@@ -171,15 +171,12 @@ fn (gui Gui) draw_tiles() {
 			if tile_value != 0 {
 				x_font := x_tile + tile_size / 2
 				y_font := y_tile + tile_size / 2
+				tile_log := 5 - int(math.log10(tile_value))
 				format := &gx.TextCfg{
 			    	color: theme.text_color(tile_value)
 			    	align: .center
 			    	vertical_align: .middle
-			    	size: if tile_value < 1024 {
-						gui.window.font_size
-					} else {
-						gui.window.font_size * 3 / 4
-					}
+			    	size: gui.window.font_size * tile_log / (tile_log + 1)
 			    }
 				gui.gg.draw_text(x_font, y_font, '${tile_value}', format)
 			}
@@ -191,7 +188,7 @@ fn (gui Gui) draw_tiles() {
 		color: gx.black
 		align: .left
 		vertical_align: .middle
-		size: gui.window.font_size / 2
+		size: gui.window.font_size * 2 / 5
 	}
     y_lable := y_start / 2
     gui.gg.draw_text(x_start, y_lable, 'Scores: ${gui.game.score}', score_format)
@@ -201,7 +198,7 @@ fn (gui Gui) draw_tiles() {
 		color: gx.black
 		align: .right
 		vertical_align: .middle
-		size: gui.window.font_size / 2
+		size: gui.window.font_size * 2 / 5
 	}
 	x_lable := gui.window.width - x_start
 	gui.gg.draw_text(x_lable, y_lable, 'Moves: ${gui.game.moves}', move_format)
