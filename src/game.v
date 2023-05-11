@@ -137,6 +137,18 @@ fn (mut game Game) refresh_move_status() {
 	}
 }
 
+fn (mut game Game) count_num() int {
+	mut count := 0
+	for i in 0 .. size {
+		for j in 0 .. size {
+			if game.matrix[i][j] != 0 {
+				count++
+			}
+		}
+	}
+	return count
+}
+
 fn (mut game Game) print_board_matrix() {
 	for i in 0 .. size {
 		for j in 0 .. size {

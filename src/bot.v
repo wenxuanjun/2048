@@ -20,7 +20,7 @@ struct AiPerform {
 
 enum AiAlgo {
 	dfs
-	abpruning
+	heuristic
 	mdp
 	reinforcement
 }
@@ -28,7 +28,7 @@ enum AiAlgo {
 fn algo_from_str(str string) AiAlgo {
 	return match str {
 		"dfs" { AiAlgo.dfs }
-		"abpruning" { AiAlgo.abpruning }
+		"heuristic" { AiAlgo.heuristic }
 		"mdp" { AiAlgo.mdp }
 		"reinforcement" { AiAlgo.reinforcement }
 		else { eprintln("Invalid AI algorithm!") exit(1) }
@@ -39,6 +39,7 @@ fn (mut game Game) ai_move() {
 	think_watch := time.new_stopwatch()
 	prediction := match game.config.ai_algo {
 		.dfs { game.ai_dfs() }
+		.heuristic { game.ai_heuristic() }
 		else { eprintln("This algo is not implemented yet!") exit(1) }
 	}
 	think_time := think_watch.elapsed()
@@ -104,6 +105,30 @@ fn (mut game Game) ai_dfs() Prediction {
 	for pred in predictions {
 		if prediction.move_score < pred.move_score {
 			prediction = pred
+		}
+	}
+	return prediction
+}
+
+fn (mut game Game) ai_heuristic() Prediction {
+	mut predictions := [4]Prediction{}
+	mut smallest_num := [17, 17, 17, 17]
+	for dir in directions {
+		if !game.can_move.query(dir) {
+			smallest_num[int(dir)] = 100
+			continue
+		}
+		predictions[int(dir)].move = dir
+		mut temp_game := game.clone()
+		temp_game.move(dir)
+		temp_game.refresh_move_status
+		smallest_num[int(dir)] = temp_game.count_num()
+	}
+	mut prediction := predictions[0]
+	minimum := smallest_num[0]
+	for i in 0 .. directions.len {
+		if smallest_num[i] < minimum {
+			prediction = predictions[i]
 		}
 	}
 	return prediction
