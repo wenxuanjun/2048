@@ -1,6 +1,5 @@
 import time
 import term
-import arrays
 
 const (
 	directions = [Direction.up, .down, .left, .right]
@@ -22,7 +21,7 @@ struct AiPerform {
 enum AiAlgo {
 	dfs
 	heuristic
-	expect
+	expectimax
 	mdp
 	reinforcement
 }
@@ -153,6 +152,10 @@ fn (mut grid ExpectGrid) clone() &ExpectGrid {
 }
 
 fn (mut game Game) ai_expectimax() Prediction {
+	if size != 4 {
+		eprintln("Expectimax only supports 4x4 grid!")
+		exit(1)
+	}
     mut grid := ExpectGrid{
         game: &game
         active: false
@@ -184,7 +187,7 @@ fn (mut game Game) ai_expectimax() Prediction {
 
 fn (mut grid ExpectGrid) expect_search(depth int) f64 {
     if depth == 0 {
-        return f64(grid.evaluate_score())
+        return grid.evaluate_score()
     }
     mut score := f64(0)
     if grid.active {
@@ -218,31 +221,33 @@ fn (mut grid ExpectGrid) expect_search(depth int) f64 {
     return score
 }
 
-fn (mut grid ExpectGrid) evaluate_score() int {
-    mut result := [0].repeat(24)
-    for row := 0; row < 4; row++ {
-        for col := 0; col < 4; col++ {
-            value := grid.game.matrix[row][col]
-            if value != 0 {
-                model_score(row, col, value, mut &result)
-            }
-        }
-    }
-    return arrays.max(result) or { 0 }
-}
-
-fn model_score(row int, col int, value int, mut result []int) {
-	for index, model in models {
-    	start := index * 8
-    	result[start] += value * model[row][col]
-    	result[start + 1] += value * model[row][3 - col]
-    	result[start + 2] += value * model[col][row]
-    	result[start + 3] += value * model[3 - col][row]
-    	result[start + 4] += value * model[3 - row][3 - col]
-    	result[start + 5] += value * model[3 - row][col]
-    	result[start + 6] += value * model[col][3 - row]
-    	result[start + 7] += value * model[3 - col][3 - row]
+fn (mut grid ExpectGrid) evaluate_score() f64 {
+    mut result := [24]int{}
+    for index, model in expect_models {
+		for row := 0; row < size; row++ {
+        	for col := 0; col < size; col++ {
+        	    value := grid.game.matrix[row][col]
+        	    if value != 0 {
+    				start := index * 8
+    				result[start] = value * model[row][col]
+    				result[start + 1] += value * model[row][3 - col]
+    				result[start + 2] += value * model[col][row]
+    				result[start + 3] += value * model[3 - col][row]
+    				result[start + 4] += value * model[3 - row][3 - col]
+    				result[start + 5] += value * model[3 - row][col]
+    				result[start + 6] += value * model[col][3 - row]
+    				result[start + 7] += value * model[3 - col][3 - row]
+        	    }
+    		}
+		}
 	}
+	mut max_number := 0
+	for value in result {
+		if value > max_number {
+			max_number = value
+		}
+	}
+    return f64(max_number)
 }
 
 /**
@@ -251,7 +256,7 @@ fn model_score(row int, col int, value int, mut result []int) {
  * Thought of the evaluation function from here either.
  */
 const (
-    models = [
+    expect_models = [
 		[
     	    [16, 15, 14, 13],
     	    [9, 10, 11, 12],

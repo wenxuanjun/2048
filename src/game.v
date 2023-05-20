@@ -33,7 +33,7 @@ mut:
 
 fn game_init(config GameConfig) &Game {
 	mut game := &Game{
-        score: 0
+    	score: 0
 		moves: 0
         matrix: [][]int{}
         can_move: &CanMove{}
