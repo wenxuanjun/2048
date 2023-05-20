@@ -1,10 +1,11 @@
 import time
 import term
+import arrays
 
 const (
 	directions = [Direction.up, .down, .left, .right]
-	dfs_pred_per_move = 500
-	dfs_pred_depth = 25
+	dfs_pred_per_move = 250
+	dfs_pred_depth = 20
 )
 
 struct Prediction {
@@ -21,6 +22,7 @@ struct AiPerform {
 enum AiAlgo {
 	dfs
 	heuristic
+	expect
 	mdp
 	reinforcement
 }
@@ -30,6 +32,7 @@ fn algo_from_str(str string) AiAlgo {
 		"dfs" { AiAlgo.dfs }
 		"heuristic" { AiAlgo.heuristic }
 		"mdp" { AiAlgo.mdp }
+		"expectimax" { AiAlgo.expectimax }
 		"reinforcement" { AiAlgo.reinforcement }
 		else { eprintln("Invalid AI algorithm!") exit(1) }
 	}
@@ -40,6 +43,7 @@ fn (mut game Game) ai_move() {
 	prediction := match game.config.ai_algo {
 		.dfs { game.ai_dfs() }
 		.heuristic { game.ai_heuristic() }
+		.expectimax { game.ai_expectimax() }
 		else { eprintln("This algo is not implemented yet!") exit(1) }
 	}
 	think_time := think_watch.elapsed()
@@ -121,7 +125,7 @@ fn (mut game Game) ai_heuristic() Prediction {
 		predictions[int(dir)].move = dir
 		mut temp_game := game.clone()
 		temp_game.move(dir)
-		temp_game.refresh_move_status
+		temp_game.refresh_move_status()
 		smallest_num[int(dir)] = temp_game.count_num()
 	}
 	mut prediction := predictions[0]
@@ -133,3 +137,138 @@ fn (mut game Game) ai_heuristic() Prediction {
 	}
 	return prediction
 }
+
+struct ExpectGrid {
+mut:
+    game Game
+    active bool
+}
+
+fn (mut grid ExpectGrid) clone() &ExpectGrid {
+    mut new_grid := &ExpectGrid{
+        game: grid.game.clone()
+        active: grid.active
+    }
+    return new_grid
+}
+
+fn (mut game Game) ai_expectimax() Prediction {
+    mut grid := ExpectGrid{
+        game: &game
+        active: false
+    }
+    mut best_score := f64(-1)
+    mut best_move := Direction.up
+
+    max_num := grid.game.get_max_number()
+	depth := if max_num >= 2048 { 6 } else if max_num >= 1024 { 5 } else { 4 }
+
+    for dir in directions {
+        if !grid.game.can_move.query(dir) {
+            continue
+        }
+        mut new_grid := grid.clone()
+        new_grid.game.move(dir)
+        new_grid.game.refresh_move_status()
+        score := new_grid.expect_search(depth)
+        if score > best_score {
+            best_move = dir
+        	best_score = score
+        }
+    }
+    return Prediction{
+        move: best_move
+        move_score: best_score
+    }
+}
+
+fn (mut grid ExpectGrid) expect_search(depth int) f64 {
+    if depth == 0 {
+        return f64(grid.evaluate_score())
+    }
+    mut score := f64(0)
+    if grid.active {
+        for dir in directions {
+            if !grid.game.can_move.query(dir) {
+                continue
+            }
+            mut temp_grid := grid.clone()
+            temp_grid.active = false
+            temp_grid.game.move(dir)
+            temp_grid.game.refresh_move_status()
+            new_score := temp_grid.expect_search(depth - 1)
+            if new_score > score {
+                score = new_score
+            }
+        }
+    } else {
+		expect_map := {2: 0.9, 4: 0.1}
+        cells := grid.game.find_empty_cells()
+        for num, prob in expect_map {
+            for index in cells {
+                mut temp_grid := grid.clone()
+                temp_grid.active = true
+                temp_grid.game.put_number(index / size, index % size, num)
+                new_score := temp_grid.expect_search(depth - 1)
+                score += f64(new_score) * prob
+            }
+        }
+        score /= f64(cells.len)
+    }
+    return score
+}
+
+fn (mut grid ExpectGrid) evaluate_score() int {
+    mut result := [0].repeat(24)
+    for row := 0; row < 4; row++ {
+        for col := 0; col < 4; col++ {
+            value := grid.game.matrix[row][col]
+            if value != 0 {
+                model_score(row, col, value, mut &result)
+            }
+        }
+    }
+    return arrays.max(result) or { 0 }
+}
+
+fn model_score(row int, col int, value int, mut result []int) {
+	for index, model in models {
+    	start := index * 8
+    	result[start] += value * model[row][col]
+    	result[start + 1] += value * model[row][3 - col]
+    	result[start + 2] += value * model[col][row]
+    	result[start + 3] += value * model[3 - col][row]
+    	result[start + 4] += value * model[3 - row][3 - col]
+    	result[start + 5] += value * model[3 - row][col]
+    	result[start + 6] += value * model[col][3 - row]
+    	result[start + 7] += value * model[3 - col][3 - row]
+	}
+}
+
+/**
+ * Weight matrix, see more details here:
+ * Github: https://github.com/ovolve/2048-AI
+ * Thought of the evaluation function from here either.
+ */
+const (
+    models = [
+		[
+    	    [16, 15, 14, 13],
+    	    [9, 10, 11, 12],
+    	    [8, 7, 6, 5],
+    	    [1, 2, 3, 4],
+		],
+    	[
+    	    [16, 15, 12, 4],
+    	    [14, 13, 11, 3],
+    	    [10, 9, 8, 2],
+    	    [7, 6, 5, 1],
+		],
+    	[
+    	    [16, 15, 14, 4],
+    	    [13, 12, 11, 3],
+    	    [10, 9, 8, 2],
+    	    [7, 6, 5, 1],
+    	]
+	]
+)

@@ -109,8 +109,8 @@ fn get_dir(key gg.KeyCode) ?Direction {
 	}
 }
 
-fn (mut game Game) generate_number() {
-	mut empty_count := u32(0)
+fn (mut game Game) find_empty_cells(prob ...f32) []int {
+	mut empty_count := 0
 	mut cells := []int{ len: size * size }
 	for i in 0 .. size {
 		for j in 0 .. size {
@@ -120,11 +120,44 @@ fn (mut game Game) generate_number() {
 			}
 		}
 	}
-	if empty_count > 0 {
-		index := cells[game.config.rng.u8() % empty_count]
-		random := game.config.rng.f64n(1.0) or { 0.0 }
-		game.matrix[index / size][index % size] = if random < 0.9 { 2 } else { 4 }
+	cells.trim(empty_count)
+	return cells
+}
+
+[inline]
+fn (mut game Game) count_num() int {
+	cells := game.find_empty_cells()
+	return cells.len
+}
+
+[inline]
+fn (mut game Game) put_number(row int, col int, value int) ? {
+	if game.matrix[row][col] != 0 {
+		panic("Cannot put number where not eq zero!")
 	}
+	game.matrix[row][col] = value
+}
+
+fn (mut game Game) generate_number() {
+	cells := game.find_empty_cells()
+	if cells.len > 0 {
+		index := cells[game.config.rng.u8() % cells.len]
+		random := game.config.rng.f64n(1.0) or { 0.0 }
+		value := if random < 0.9 { 2 } else { 4 }
+		game.put_number(index / size, index % size, value)
+	}
+}
+
+fn (mut game Game) get_max_number() int {
+	mut max_number := 0
+    for i in 0 .. size {
+        for j in 0 .. size {
+            if game.matrix[i][j] >= max_number {
+                max_number = game.matrix[i][j]
+        	}
+        }
+    }
+	return max_number
 }
 
 [inline]
@@ -135,18 +168,6 @@ fn (mut game Game) refresh_move_status() {
 		up: game.can_move_up()
 		down: game.can_move_down()
 	}
-}
-
-fn (mut game Game) count_num() int {
-	mut count := 0
-	for i in 0 .. size {
-		for j in 0 .. size {
-			if game.matrix[i][j] != 0 {
-				count++
-			}
-		}
-	}
-	return count
 }
 
 fn (mut game Game) print_board_matrix() {
