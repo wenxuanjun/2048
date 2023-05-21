@@ -3,8 +3,8 @@ import term
 
 const (
 	directions = [Direction.up, .down, .left, .right]
-	dfs_pred_per_move = 250
-	dfs_pred_depth = 20
+	dfs_pred_per_move = 500
+	dfs_pred_depth = 25
 )
 
 struct Prediction {
@@ -21,6 +21,7 @@ struct AiPerform {
 enum AiAlgo {
 	dfs
 	heuristic
+	minmax
 	expectimax
 	mdp
 	reinforcement
@@ -30,8 +31,9 @@ fn algo_from_str(str string) AiAlgo {
 	return match str {
 		"dfs" { AiAlgo.dfs }
 		"heuristic" { AiAlgo.heuristic }
-		"mdp" { AiAlgo.mdp }
+		"minmax" { AiAlgo.minmax }
 		"expectimax" { AiAlgo.expectimax }
+		"mdp" { AiAlgo.mdp }
 		"reinforcement" { AiAlgo.reinforcement }
 		else { eprintln("Invalid AI algorithm!") exit(1) }
 	}
@@ -42,6 +44,7 @@ fn (mut game Game) ai_move() {
 	prediction := match game.config.ai_algo {
 		.dfs { game.ai_dfs() }
 		.heuristic { game.ai_heuristic() }
+		.minmax { game.ai_minmax() }
 		.expectimax { game.ai_expectimax() }
 		else { eprintln("This algo is not implemented yet!") exit(1) }
 	}
@@ -113,7 +116,7 @@ fn (mut game Game) ai_dfs() Prediction {
 	return prediction
 }
 
-fn (mut game Game) ai_heuristic() Prediction {
+fn (game Game) ai_heuristic() Prediction {
 	mut predictions := [4]Prediction{}
 	mut smallest_num := [17, 17, 17, 17]
 	for dir in directions {
@@ -143,7 +146,7 @@ mut:
     active bool
 }
 
-fn (mut grid ExpectGrid) clone() &ExpectGrid {
+fn (grid ExpectGrid) clone() &ExpectGrid {
     mut new_grid := &ExpectGrid{
         game: grid.game.clone()
         active: grid.active
@@ -151,7 +154,7 @@ fn (mut grid ExpectGrid) clone() &ExpectGrid {
     return new_grid
 }
 
-fn (mut game Game) ai_expectimax() Prediction {
+fn (game Game) ai_expectimax() Prediction {
 	if size != 4 {
 		eprintln("Expectimax only supports 4x4 grid!")
 		exit(1)
@@ -185,7 +188,7 @@ fn (mut game Game) ai_expectimax() Prediction {
     }
 }
 
-fn (mut grid ExpectGrid) expect_search(depth int) f64 {
+fn (grid ExpectGrid) expect_search(depth int) f64 {
     if depth == 0 {
         return grid.evaluate_score()
     }
@@ -221,7 +224,7 @@ fn (mut grid ExpectGrid) expect_search(depth int) f64 {
     return score
 }
 
-fn (mut grid ExpectGrid) evaluate_score() f64 {
+fn (grid ExpectGrid) evaluate_score() f64 {
     mut result := [24]int{}
     for index, model in expect_models {
 		for row := 0; row < size; row++ {
@@ -277,3 +280,11 @@ const (
     	]
 	]
 )
+
+fn (game Game) ai_minmax() Prediction {
+	mut prediction := Prediction{
+		move: Direction.up
+		move_score: 0
+	}
+	return prediction
+}

@@ -42,7 +42,7 @@ fn empty_equal(game &Game, x int, y int, r int, c int) bool {
 	return false
 }
 
-fn (mut game Game) can_move_left() bool {
+fn (game Game) can_move_left() bool {
     for i := 0; i < size; i++ {
         for j := 1; j < size; j++ {
             if empty_equal(game, i, j, i, j - 1) {
@@ -53,7 +53,7 @@ fn (mut game Game) can_move_left() bool {
     return false
 }
 
-fn (mut game Game) can_move_right() bool {
+fn (game Game) can_move_right() bool {
     for i := 0; i < size; i++ {
         for j := size - 2; j >= 0; j-- {
             if empty_equal(game, i, j, i, j + 1) {
@@ -64,7 +64,7 @@ fn (mut game Game) can_move_right() bool {
     return false
 }
 
-fn (mut game Game) can_move_up() bool {
+fn (game Game) can_move_up() bool {
     for j := 0; j < size; j++ {
         for i := 1; i < size; i++ {
             if empty_equal(game, i, j, i - 1, j) {
@@ -75,7 +75,7 @@ fn (mut game Game) can_move_up() bool {
     return false
 }
 
-fn (mut game Game) can_move_down() bool {
+fn (game Game) can_move_down() bool {
     for j := 0; j < size; j++ {
         for i := size - 2; i >= 0; i-- {
             if empty_equal(game, i, j, i + 1, j) {

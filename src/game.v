@@ -55,7 +55,7 @@ fn game_init(config GameConfig) &Game {
 	return game
 }
 
-fn (mut game Game) clone() &Game {
+fn (game Game) clone() &Game {
 	mut new_game := &Game{
 		score: game.score
 		matrix: game.matrix.clone()
@@ -109,7 +109,7 @@ fn get_dir(key gg.KeyCode) ?Direction {
 	}
 }
 
-fn (mut game Game) find_empty_cells(prob ...f32) []int {
+fn (game Game) find_empty_cells(prob ...f32) []int {
 	mut empty_count := 0
 	mut cells := []int{ len: size * size }
 	for i in 0 .. size {
@@ -125,7 +125,7 @@ fn (mut game Game) find_empty_cells(prob ...f32) []int {
 }
 
 [inline]
-fn (mut game Game) count_num() int {
+fn (game Game) count_num() int {
 	cells := game.find_empty_cells()
 	return cells.len
 }
@@ -148,7 +148,7 @@ fn (mut game Game) generate_number() {
 	}
 }
 
-fn (mut game Game) get_max_number() int {
+fn (game Game) get_max_number() int {
 	mut max_number := 0
     for i in 0 .. size {
         for j in 0 .. size {
@@ -170,7 +170,7 @@ fn (mut game Game) refresh_move_status() {
 	}
 }
 
-fn (mut game Game) print_board_matrix() {
+fn (game Game) print_board_matrix() {
 	for i in 0 .. size {
 		for j in 0 .. size {
 			print(game.matrix[i][j])
