@@ -125,7 +125,7 @@ fn (game Game) find_empty_cells(prob ...f32) []int {
 }
 
 [inline]
-fn (game Game) count_num() int {
+fn (game Game) count_empty_num() int {
 	cells := game.find_empty_cells()
 	return cells.len
 }
@@ -142,7 +142,7 @@ fn (mut game Game) generate_number() {
 	cells := game.find_empty_cells()
 	if cells.len > 0 {
 		index := cells[game.config.rng.u8() % cells.len]
-		random := game.config.rng.f64n(1.0) or { 0.0 }
+		random := game.config.rng.f32n(1.0) or { 0.0 }
 		value := if random < 0.9 { 2 } else { 4 }
 		game.put_number(index / size, index % size, value)
 	}

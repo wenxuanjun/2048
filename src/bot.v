@@ -1,10 +1,12 @@
 import time
 import term
+import math
 
 const (
 	directions = [Direction.up, .down, .left, .right]
-	dfs_pred_per_move = 500
-	dfs_pred_depth = 25
+	dfs_pred_per_move = 200
+	dfs_pred_depth = 20
+	minmax_depth = 10
 )
 
 struct Prediction {
@@ -116,6 +118,8 @@ fn (mut game Game) ai_dfs() Prediction {
 	return prediction
 }
 
+
+
 fn (game Game) ai_heuristic() Prediction {
 	mut predictions := [4]Prediction{}
 	mut smallest_num := [17, 17, 17, 17]
@@ -128,7 +132,7 @@ fn (game Game) ai_heuristic() Prediction {
 		mut temp_game := game.clone()
 		temp_game.move(dir)
 		temp_game.refresh_move_status()
-		smallest_num[int(dir)] = temp_game.count_num()
+		smallest_num[int(dir)] = temp_game.count_empty_num()
 	}
 	mut prediction := predictions[0]
 	minimum := smallest_num[0]
@@ -282,9 +286,88 @@ const (
 )
 
 fn (game Game) ai_minmax() Prediction {
-	mut prediction := Prediction{
+	mut best_pred := Prediction{
 		move: Direction.up
-		move_score: 0
+		move_score: f64(-1e10)
 	}
-	return prediction
+	for dir in directions {
+		if game.can_move.query(dir) {
+			mut temp_game := game.clone()
+			temp_game.move(dir)
+			temp_game.refresh_move_status()
+			score := find_max(
+				temp_game,
+				minmax_depth,
+				math.min_i32,
+				math.max_i32
+			)
+			if score > best_pred.move_score {
+				best_pred.move = dir
+				best_pred.move_score = score
+			}
+		}
+	}
+
+	return best_pred
+}
+
+fn find_max(game &Game, depth int, alpha int, beta int) int {
+	if depth == 0 || !game.can_move.exist() {
+		return game.score
+	}
+
+	mut max_score := math.min_i32
+	mut temp_alpha := alpha
+
+	for dir in directions {
+		if !game.can_move.query(dir) {
+			continue
+		}
+		mut temp_game := game.clone()
+		temp_game.move(dir)
+		temp_game.refresh_move_status()
+
+		score := find_min(temp_game, depth - 1, temp_alpha, beta)
+		max_score = if max_score > score { max_score } else { score }
+
+		if beta <= temp_alpha {
+			break
+		}
+		if temp_alpha < max_score {
+			temp_alpha = max_score
+		}
+	}
+
+	return max_score
+}
+
+fn find_min(game &Game, depth int, alpha int, beta int) int {
+	if depth == 0 || !game.can_move.exist() {
+		return game.score
+	}
+
+	mut min_score := math.max_i32
+	mut temp_beta := beta
+
+	for dir in directions {
+		if !game.can_move.query(dir) {
+			continue
+		}
+		mut temp_game := game.clone()
+		temp_game.move(dir)
+		temp_game.refresh_move_status()
+		temp_game.generate_number()
+
+		score := find_max(temp_game, depth - 1, alpha, temp_beta)
+		min_score = if min_score < score { min_score } else { score }
+
+		if temp_beta <= alpha {
+			break
+		}
+		if temp_beta > min_score {
+			temp_beta = min_score
+		}
+	}
+
+	return min_score
 }
