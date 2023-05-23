@@ -2,12 +2,15 @@ module main
 
 import os
 import flag
+import rand
 
-struct App {
-mut:
-    gui Gui
-    game Game
-}
+__global (
+    rng &rand.PRNG
+    ai_algo AiAlgo
+    enable_ai bool
+    move_log bool
+    q_table &QTable
+)
 
 const (
     usage = [
@@ -23,10 +26,10 @@ const (
 fn main() {
     mut fp := flag.new_flag_parser(os.args)
     fp.skip_executable()
-    ai_mode := fp.bool("ai", `a`, false, usage[0])
+    enable_ai_tmp := fp.bool("ai", `a`, false, usage[0])
     enable_gui := fp.bool("gui", `g`, false, usage[1])
-    move_log := fp.bool("log", `l`, false, usage[2])
-    ai_algo := fp.string("algo", `A`, "dfs", usage[3])
+    move_log_tmp := fp.bool("log", `l`, false, usage[2])
+    ai_algo_tmp := fp.string("algo", `A`, "dfs", usage[3])
     rand_algo := fp.string("rand", `r`, "xoroshiro128pp", usage[4])
     list_rand := fp.bool("list", `L`, false, usage[5])
 
@@ -39,30 +42,26 @@ fn main() {
         list_prng() return
     }
 
-    config := &GameConfig {
-        ai_mode: ai_mode,
-        move_log: move_log,
-        ai_algo: algo_from_str(ai_algo),
-        rng: get_prng(rand_algo)
-    }
+    // Init global variables
+    rng = get_prng(rand_algo)
+    ai_algo = algo_from_str(ai_algo_tmp)
+    move_log = move_log_tmp
+    enable_ai = enable_ai_tmp
+    q_table = &QTable{
+		data: map[string]map[Direction]f64{}
+	}
 
-    mut game := game_init(config)
+    mut game := game_init()
 
-    if config.ai_algo == AiAlgo.reinforcement {
+    if ai_algo == AiAlgo.reinforcement {
         println("Training Q table...")
-        q_table := game.train_qlearning()
+        game.train_qlearning()
         println("Training done, starting game!")
-        for {
-            game.ai_move(q_table)
-        }
     }
 
     if enable_gui {
-        mut app := &App {
-            game: game,
-            gui: gui_init(*game),
-        }
-        app.gui.gg.run()
+        mut gui := gui_init(*game)
+        gui.gg.run()
     } else {
         for {
             game.ai_move()

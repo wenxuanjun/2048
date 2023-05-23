@@ -1,16 +1,15 @@
 import time
 import term
 import math
-import strings
 
 const (
 	directions = [Direction.up, .down, .left, .right]
 	dfs_pred_per_move = 200
 	dfs_pred_depth = 20
 	minmax_depth = 10
-    learning_rate = 0.1
-    discount_factor = 0.99
-    exploration_rate = 0.1
+	learning_rate = 0.1
+	discount_factor = 0.99
+	exploration_rate = 0.1
 	n_episodes = 3000
 )
 
@@ -46,20 +45,14 @@ fn algo_from_str(str string) AiAlgo {
 	}
 }
 
-fn (mut game Game) ai_move(args ...voidptr) {
+fn (mut game Game) ai_move() {
 	think_watch := time.new_stopwatch()
-	prediction := match game.config.ai_algo {
+	prediction := match ai_algo {
 		.dfs { game.ai_dfs() }
 		.heuristic { game.ai_heuristic() }
 		.minmax { game.ai_minmax() }
 		.expectimax { game.ai_expectimax() }
-		.reinforcement {
-			if args.len == 0 {
-				eprintln("Need a pretrained Q table!")
-				exit(1)
-			}
-			game.ai_reinforcement(unsafe { &QTable(args[0]) })
-		}
+		.reinforcement { game.ai_reinforcement() }
 		else { eprintln("This algo is not implemented yet!") exit(1) }
 	}
 	think_time := think_watch.elapsed()
@@ -71,7 +64,7 @@ fn (mut game Game) ai_move(args ...voidptr) {
 }
 
 fn (mut game Game) ai_perform(perform AiPerform) {
-	if !game.config.move_log && game.moves != 0 {
+	if !move_log && game.moves != 0 {
 		term.clear_previous_line()
 	}
 	print('Score: ${game.score} | ')
@@ -104,7 +97,7 @@ fn (mut game Game) ai_dfs() Prediction {
 			all_score += temp_game.score
 			mut move_depth := 0
 			for temp_game.can_move.exist() {
-				index := game.config.rng.u8() % directions.len
+				index := rng.u8() % directions.len
 				rand_dir := directions[index]
 				if !temp_game.can_move.query(rand_dir) {
 					continue
@@ -382,9 +375,9 @@ fn ab_find_min(game &Game, depth int, alpha int, beta int) int {
 	return min_score
 }
 
-fn (mut game Game) ai_reinforcement(q_table &QTable) Prediction {
+fn (mut game Game) ai_reinforcement() Prediction {
 	prediction := Prediction{
-		move: game.ai_qlearning(q_table)
+		move: game.ai_qlearning()
 		move_score: 0.0
 	}
 	return prediction
@@ -429,40 +422,24 @@ fn (qt QTable) choose_action(state string, valid_actions []Direction) Direction 
     return best_action
 }
 
-fn (game Game) get_state_string() string {
-    // 生成游戏状态唯一字符串
-	mut string_builder := strings.new_builder(100)
-	for row := 0; row < size; row++ {
-		for col := 0; col < size; col++ {
-			string_builder.write_string(game.matrix[row][col].str())
-			string_builder.write_u8(`|`)
-		}
-	}
-	return string_builder.str()
-}
-
-fn (mut game Game) ai_qlearning(q_table QTable) Direction {
+fn (mut game Game) ai_qlearning() Direction {
     state := game.get_state_string()
     valid_actions := game.get_valid_actions()
 
-    if game.config.rng.f64() < exploration_rate {
-        return valid_actions[game.config.rng.intn(valid_actions.len) or { 0 }]
+    if rng.f64() < exploration_rate {
+        return valid_actions[rng.intn(valid_actions.len) or { 0 }]
     }
 
 	return q_table.choose_action(state, valid_actions)
 }
 
-fn (game Game) train_qlearning() QTable {
-    mut q_table := QTable{
-        data: map[string]map[Direction]f64{}
-    }
-
+fn (game Game) train_qlearning() {
     for _ in 0 .. n_episodes {
         mut current_game := game.clone()
 
         for current_game.can_move.exist() {
             current_state := current_game.get_state_string()
-            action := current_game.ai_qlearning(q_table)
+            action := current_game.ai_qlearning()
             prev_score := current_game.score
 
             mut next_game := current_game.clone()
@@ -487,5 +464,4 @@ fn (game Game) train_qlearning() QTable {
     }
 
     println("Length of Q-table: ${q_table.data.len}")
-    return q_table
 }

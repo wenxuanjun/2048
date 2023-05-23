@@ -84,7 +84,7 @@ fn gui_init(game &Game) &Gui {
 fn on_event(e &gg.Event, mut gui Gui) {
     match e.typ {
         .key_down {
-			if gui.game.config.ai_mode {
+			if enable_ai {
 				return
 			}
 			dir := get_dir(e.key_code)
@@ -100,7 +100,7 @@ fn on_event(e &gg.Event, mut gui Gui) {
 fn on_frame(mut gui Gui) {
 	gui.gg.begin()
     gui.draw_tiles()
-	if gui.game.config.ai_mode {
+	if enable_ai {
 		gui.game.ai_move()
 	}
 	gui.gg.end()

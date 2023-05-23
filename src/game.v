@@ -1,5 +1,5 @@
 import gg
-import rand
+import strings
 
 const (
     size = 4
@@ -20,24 +20,14 @@ mut:
 	moves int
     matrix [][]int
     can_move CanMove
-	config GameConfig
 }
 
-struct GameConfig {
-	ai_mode bool
-	move_log bool
-	ai_algo AiAlgo
-mut:
-	rng rand.PRNG
-}
-
-fn game_init(config GameConfig) &Game {
+fn game_init() &Game {
 	mut game := &Game{
     	score: 0
 		moves: 0
         matrix: [][]int{}
         can_move: &CanMove{}
-		config: config
 	}
 
 	// Initialize the matrix
@@ -65,7 +55,6 @@ fn (game Game) clone() &Game {
 			up: game.can_move.up
 			down: game.can_move.down
 		}
-		config: game.config
 	}
 	return new_game
 }
@@ -83,7 +72,7 @@ fn (mut game Game) step(dir Direction) {
 	game.moves++
 
 	// Print the matrix and status
-	if !game.config.ai_mode && game.config.move_log {
+	if !enable_ai && move_log {
 		println('Score: ' + game.score.str())
 		game.print_board_matrix()
 		println('Status: ${game.can_move}')
@@ -141,8 +130,8 @@ fn (mut game Game) put_number(row int, col int, value int) ? {
 fn (mut game Game) generate_number() {
 	cells := game.find_empty_cells()
 	if cells.len > 0 {
-		index := cells[game.config.rng.u8() % cells.len]
-		random := game.config.rng.f32n(1.0) or { 0.0 }
+		index := cells[rng.u8() % cells.len]
+		random := rng.f32n(1.0) or { 0.0 }
 		value := if random < 0.9 { 2 } else { 4 }
 		game.put_number(index / size, index % size, value)
 	}
@@ -188,4 +177,16 @@ fn (game Game) print_board_matrix() {
 		}
 		println('\n')
 	}
+}
+
+fn (game Game) get_state_string() string {
+    // Generate game state unique string
+	mut string_builder := strings.new_builder(100)
+	for row := 0; row < size; row++ {
+		for col := 0; col < size; col++ {
+			string_builder.write_string(game.matrix[row][col].str())
+			string_builder.write_u8(`|`)
+		}
+	}
+	return string_builder.str()
 }
