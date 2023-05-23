@@ -1,12 +1,17 @@
 import time
 import term
 import math
+import strings
 
 const (
 	directions = [Direction.up, .down, .left, .right]
 	dfs_pred_per_move = 200
 	dfs_pred_depth = 20
 	minmax_depth = 10
+    learning_rate = 0.1
+    discount_factor = 0.99
+    exploration_rate = 0.1
+	n_episodes = 3000
 )
 
 struct Prediction {
@@ -41,13 +46,20 @@ fn algo_from_str(str string) AiAlgo {
 	}
 }
 
-fn (mut game Game) ai_move() {
+fn (mut game Game) ai_move(args ...voidptr) {
 	think_watch := time.new_stopwatch()
 	prediction := match game.config.ai_algo {
 		.dfs { game.ai_dfs() }
 		.heuristic { game.ai_heuristic() }
 		.minmax { game.ai_minmax() }
 		.expectimax { game.ai_expectimax() }
+		.reinforcement {
+			if args.len == 0 {
+				eprintln("Need a pretrained Q table!")
+				exit(1)
+			}
+			game.ai_reinforcement(unsafe { &QTable(args[0]) })
+		}
 		else { eprintln("This algo is not implemented yet!") exit(1) }
 	}
 	think_time := think_watch.elapsed()
@@ -117,8 +129,6 @@ fn (mut game Game) ai_dfs() Prediction {
 	}
 	return prediction
 }
-
-
 
 fn (game Game) ai_heuristic() Prediction {
 	mut predictions := [4]Prediction{}
@@ -295,7 +305,7 @@ fn (game Game) ai_minmax() Prediction {
 			mut temp_game := game.clone()
 			temp_game.move(dir)
 			temp_game.refresh_move_status()
-			score := find_max(
+			score := ab_find_max(
 				temp_game,
 				minmax_depth,
 				math.min_i32,
@@ -311,7 +321,7 @@ fn (game Game) ai_minmax() Prediction {
 	return best_pred
 }
 
-fn find_max(game &Game, depth int, alpha int, beta int) int {
+fn ab_find_max(game &Game, depth int, alpha int, beta int) int {
 	if depth == 0 || !game.can_move.exist() {
 		return game.score
 	}
@@ -327,7 +337,7 @@ fn find_max(game &Game, depth int, alpha int, beta int) int {
 		temp_game.move(dir)
 		temp_game.refresh_move_status()
 
-		score := find_min(temp_game, depth - 1, temp_alpha, beta)
+		score := ab_find_min(temp_game, depth - 1, temp_alpha, beta)
 		max_score = if max_score > score { max_score } else { score }
 
 		if beta <= temp_alpha {
@@ -341,7 +351,7 @@ fn find_max(game &Game, depth int, alpha int, beta int) int {
 	return max_score
 }
 
-fn find_min(game &Game, depth int, alpha int, beta int) int {
+fn ab_find_min(game &Game, depth int, alpha int, beta int) int {
 	if depth == 0 || !game.can_move.exist() {
 		return game.score
 	}
@@ -358,7 +368,7 @@ fn find_min(game &Game, depth int, alpha int, beta int) int {
 		temp_game.refresh_move_status()
 		temp_game.generate_number()
 
-		score := find_max(temp_game, depth - 1, alpha, temp_beta)
+		score := ab_find_max(temp_game, depth - 1, alpha, temp_beta)
 		min_score = if min_score < score { min_score } else { score }
 
 		if temp_beta <= alpha {
@@ -370,4 +380,112 @@ fn find_min(game &Game, depth int, alpha int, beta int) int {
 	}
 
 	return min_score
+}
+
+fn (mut game Game) ai_reinforcement(q_table &QTable) Prediction {
+	prediction := Prediction{
+		move: game.ai_qlearning(q_table)
+		move_score: 0.0
+	}
+	return prediction
+}
+
+pub struct QTable {
+mut:
+    data map[string]map[Direction]f64
+}
+
+fn (qt QTable) get(state string, action Direction) f64 {
+    if action_values := qt.data[state] {
+        if q_value := action_values[action] {
+            return q_value
+        }
+    }
+    return 0.0
+}
+
+fn (mut qt QTable) update(state string, action Direction, new_value f64) {
+    if mut action_values := qt.data[state] {
+        action_values[action] = new_value
+    } else {
+		mut temp_map := map[Direction]f64{}
+		temp_map[action] = new_value
+        qt.data[state] = temp_map.clone()
+    }
+}
+
+fn (qt QTable) choose_action(state string, valid_actions []Direction) Direction {
+    mut best_action := valid_actions[0]
+    mut max_q_value := qt.get(state, best_action)
+
+    for action in valid_actions {
+        q_value := qt.get(state, action)
+        if q_value > max_q_value {
+            max_q_value = q_value
+            best_action = action
+        }
+    }
+
+    return best_action
+}
+
+fn (game Game) get_state_string() string {
+    // 生成游戏状态唯一字符串
+	mut string_builder := strings.new_builder(100)
+	for row := 0; row < size; row++ {
+		for col := 0; col < size; col++ {
+			string_builder.write_string(game.matrix[row][col].str())
+			string_builder.write_u8(`|`)
+		}
+	}
+	return string_builder.str()
+}
+
+fn (mut game Game) ai_qlearning(q_table QTable) Direction {
+    state := game.get_state_string()
+    valid_actions := game.get_valid_actions()
+
+    if game.config.rng.f64() < exploration_rate {
+        return valid_actions[game.config.rng.intn(valid_actions.len) or { 0 }]
+    }
+
+	return q_table.choose_action(state, valid_actions)
+}
+
+fn (game Game) train_qlearning() QTable {
+    mut q_table := QTable{
+        data: map[string]map[Direction]f64{}
+    }
+
+    for _ in 0 .. n_episodes {
+        mut current_game := game.clone()
+
+        for current_game.can_move.exist() {
+            current_state := current_game.get_state_string()
+            action := current_game.ai_qlearning(q_table)
+            prev_score := current_game.score
+
+            mut next_game := current_game.clone()
+            next_game.move(action)
+            next_game.refresh_move_status()
+            next_game.generate_number()
+
+            next_state := next_game.get_state_string()
+            reward := next_game.score - prev_score
+
+            q_value := q_table.get(current_state, action)
+            mut target := f64(reward)
+
+            if next_game.can_move.exist() {
+                target += discount_factor * q_table.get(next_state, q_table.choose_action(next_state, next_game.get_valid_actions()))
+            }
+
+            q_table.update(current_state, action, q_value + learning_rate * (target - q_value))
+
+            current_game = next_game
+        }
+    }
+
+    println("Length of Q-table: ${q_table.data.len}")
+    return q_table
 }

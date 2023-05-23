@@ -48,6 +48,15 @@ fn main() {
 
     mut game := game_init(config)
 
+    if config.ai_algo == AiAlgo.reinforcement {
+        println("Training Q table...")
+        q_table := game.train_qlearning()
+        println("Training done, starting game!")
+        for {
+            game.ai_move(q_table)
+        }
+    }
+
     if enable_gui {
         mut app := &App {
             game: game,

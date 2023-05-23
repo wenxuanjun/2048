@@ -160,6 +160,16 @@ fn (game Game) get_max_number() int {
 	return max_number
 }
 
+fn (game Game) get_valid_actions() []Direction {
+	mut valid_actions := []Direction{cap: 4}
+	for dir in directions {
+		if game.can_move.query(dir) {
+			valid_actions << dir
+		}
+	}
+	return valid_actions
+}
+
 [inline]
 fn (mut game Game) refresh_move_status() {
 	game.can_move = &CanMove{
