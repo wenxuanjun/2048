@@ -4,8 +4,9 @@ import math
 
 const (
 	directions = [Direction.up, .down, .left, .right]
-	dfs_pred_per_move = 200
-	dfs_pred_depth = 20
+	dfs_depth = 9
+	pred_per_move = 500
+	pred_depth = 25
 	minmax_depth = 10
 	learning_rate = 0.1
 	discount_factor = 0.99
@@ -29,7 +30,7 @@ enum AiAlgo {
 	heuristic
 	minmax
 	expectimax
-	mdp
+	monte
 	reinforcement
 }
 
@@ -39,7 +40,7 @@ fn algo_from_str(str string) AiAlgo {
 		"heuristic" { AiAlgo.heuristic }
 		"minmax" { AiAlgo.minmax }
 		"expectimax" { AiAlgo.expectimax }
-		"mdp" { AiAlgo.mdp }
+		"monte" { AiAlgo.monte }
 		"reinforcement" { AiAlgo.reinforcement }
 		else { eprintln("Invalid AI algorithm!") exit(1) }
 	}
@@ -52,8 +53,8 @@ fn (mut game Game) ai_move() {
 		.heuristic { game.ai_heuristic() }
 		.minmax { game.ai_minmax() }
 		.expectimax { game.ai_expectimax() }
+		.monte { game.ai_monte() }
 		.reinforcement { game.ai_reinforcement() }
-		else { eprintln("This algo is not implemented yet!") exit(1) }
 	}
 	think_time := think_watch.elapsed()
 	ai_perform := &AiPerform{
@@ -75,52 +76,45 @@ fn (mut game Game) ai_perform(perform AiPerform) {
 	game.step(perform.prediction.move)
 }
 
-fn (mut game Game) ai_dfs() Prediction {
-	mut predictions := [4]Prediction{}
-	for dir in directions {
-		if !game.can_move.query(dir) {
-			continue
-		}
-		mut all_score := 0
-		predictions[int(dir)].move = dir
-		for _ in 0 .. dfs_pred_per_move {
-			if !game.can_move.query(dir) {
-				continue
-			}
-			mut temp_game := game.clone()
-			temp_game.move(dir)
-			temp_game.refresh_move_status()
-			if !temp_game.can_move.exist() {
-				continue
-			}
-			temp_game.generate_number()
-			all_score += temp_game.score
-			mut move_depth := 0
-			for temp_game.can_move.exist() {
-				index := rng.u8() % directions.len
-				rand_dir := directions[index]
-				if !temp_game.can_move.query(rand_dir) {
-					continue
-				}
-				temp_game.move(rand_dir)
-				temp_game.refresh_move_status()
-				temp_game.generate_number()
-				move_depth++
-				if move_depth > dfs_pred_depth {
-					break
-				}
-			}
-			all_score += temp_game.score
-		}
-		predictions[int(dir)].move_score = f64(all_score) / dfs_pred_per_move
+fn (game Game) ai_dfs() Prediction {
+    mut best_prediction := Prediction{
+		move: .up,
+		move_score: -1.0
 	}
-	mut prediction := predictions[0]
-	for pred in predictions {
-		if prediction.move_score < pred.move_score {
-			prediction = pred
-		}
-	}
-	return prediction
+    for dir in directions {
+        if game.can_move.query(dir) {
+            mut temp_game := game.clone()
+            temp_game.move(dir)
+            temp_game.refresh_move_status()
+            temp_game.generate_number()
+            score := dfs_perform(temp_game, 0)
+            if score > best_prediction.move_score {
+                best_prediction.move = dir
+                best_prediction.move_score = score
+            }
+        }
+    }
+    return best_prediction
+}
+
+fn dfs_perform(game &Game, depth int) int {
+    if depth == dfs_depth || !game.can_move.exist() {
+        return game.score
+    }
+    mut max_score := 0
+    for dir in directions {
+        if game.can_move.query(dir) {
+            mut temp_game := game.clone()
+            temp_game.move(dir)
+            temp_game.refresh_move_status()
+            temp_game.generate_number()
+            score := dfs_perform(temp_game, depth + 1)
+            if score > max_score {
+                max_score = score
+            }
+        }
+    }
+    return max_score
 }
 
 fn (game Game) ai_heuristic() Prediction {
@@ -373,6 +367,54 @@ fn ab_find_min(game &Game, depth int, alpha int, beta int) int {
 	}
 
 	return min_score
+}
+
+fn (mut game Game) ai_monte() Prediction {
+	mut predictions := [4]Prediction{}
+	for dir in directions {
+		if !game.can_move.query(dir) {
+			continue
+		}
+		mut all_score := 0
+		predictions[int(dir)].move = dir
+		for _ in 0 .. pred_per_move {
+			if !game.can_move.query(dir) {
+				continue
+			}
+			mut temp_game := game.clone()
+			temp_game.move(dir)
+			temp_game.refresh_move_status()
+			if !temp_game.can_move.exist() {
+				continue
+			}
+			temp_game.generate_number()
+			all_score += temp_game.score
+			mut move_depth := 0
+			for temp_game.can_move.exist() {
+				index := rng.u8() % directions.len
+				rand_dir := directions[index]
+				if !temp_game.can_move.query(rand_dir) {
+					continue
+				}
+				temp_game.move(rand_dir)
+				temp_game.refresh_move_status()
+				temp_game.generate_number()
+				move_depth++
+				if move_depth > pred_depth {
+					break
+				}
+			}
+			all_score += temp_game.score
+		}
+		predictions[int(dir)].move_score = f64(all_score) / pred_per_move
+	}
+	mut prediction := predictions[0]
+	for pred in predictions {
+		if prediction.move_score < pred.move_score {
+			prediction = pred
+		}
+	}
+	return prediction
 }
 
 fn (mut game Game) ai_reinforcement() Prediction {
