@@ -13,12 +13,11 @@ enum Direction {
 	down
 }
 
-[heap]
 struct Game {
 mut:
     score int
 	moves int
-    matrix [][]int
+    matrix [size][size]int
     can_move CanMove
 }
 
@@ -26,15 +25,9 @@ fn game_init() &Game {
 	mut game := &Game{
     	score: 0
 		moves: 0
-        matrix: [][]int{}
+        matrix: [size][size]int{}
         can_move: &CanMove{}
 	}
-
-	// Initialize the matrix
-	game.matrix = [][]int{
-        len: size,
-        init: []int{len: size}
-    }
 
 	// Generate the init numbers
     for _ in 0 .. init_number_count {
@@ -48,12 +41,17 @@ fn game_init() &Game {
 fn (game Game) clone() &Game {
 	mut new_game := &Game{
 		score: game.score
-		matrix: game.matrix.clone()
+		matrix: [size][size]int{}
 		can_move: &CanMove{
 			left: game.can_move.left
 			right: game.can_move.right
 			up: game.can_move.up
 			down: game.can_move.down
+		}
+	}
+	for i in 0 .. size {
+		for j in 0 .. size {
+			new_game.matrix[i][j] = game.matrix[i][j]
 		}
 	}
 	return new_game

@@ -64,7 +64,7 @@ mut:
 fn gui_init(game &Game) &Gui {
 	mut gui := &Gui{
 		gg: 0
-		game: game
+		game: unsafe { game }
 	}
 	gui.gg = gg.new_context(
 		width: default_width
