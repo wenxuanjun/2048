@@ -1,3 +1,5 @@
+module main
+
 import gg
 import strings
 
@@ -65,8 +67,8 @@ fn (mut game Game) step(dir Direction) {
 
 	// Move, spawn new number and refresh move status
 	game.move(dir)
-	game.generate_number()
 	game.refresh_move_status()
+	game.generate_number()
 	game.moves++
 
 	// Print the matrix and status
@@ -98,7 +100,7 @@ fn get_dir(key gg.KeyCode) ?Direction {
 
 fn (game Game) find_empty_cells(prob ...f32) []int {
 	mut empty_count := 0
-	mut cells := []int{ len: size * size }
+	mut cells := []int{len: size * size}
 	for i in 0 .. size {
 		for j in 0 .. size {
 			if game.matrix[i][j] == 0 {

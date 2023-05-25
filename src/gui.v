@@ -1,3 +1,5 @@
+module main
+
 import gg
 import gx
 import math

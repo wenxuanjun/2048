@@ -1,3 +1,5 @@
+module main
+
 import time
 import term
 import math
@@ -6,7 +8,7 @@ const (
 	directions = [Direction.up, .down, .left, .right]
 	dfs_depth = 9
 	pred_per_move = 500
-	pred_depth = 25
+	pred_depth = 35
 	minmax_depth = 10
 	learning_rate = 0.1
 	discount_factor = 0.99

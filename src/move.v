@@ -18,16 +18,6 @@ fn (mut game Game) move(dir Direction) {
 	}
 }
 
-/* 
- * 1. 先把所有的数字靠边
- * 2. 对于当前行，先合并这一行所有可以合并的
- * 3. 合并成功，跳过刚刚被设置为零的数字，防止递归合并
- * 4. 清空临时数组
- * 5. 再次把所有的数字靠边
- */
-
-// 这四个函数只是方向不同，但我不知道怎么合并成一个函数（恼）
-
 fn (mut game Game) move_left() {
     for i := 0; i < size; i++ {
         mut pointer := 0
@@ -59,6 +49,9 @@ fn (mut game Game) move_left() {
                 game.matrix[i][pointer] = game.matrix[i][j]
                 pointer++
             }
+        }
+        if pointer == 0 {
+            continue
         }
         for j := pointer; j < size; j++ {
             game.matrix[i][j] = 0
@@ -98,6 +91,9 @@ fn (mut game Game) move_right() {
                 pointer--
             }
         }
+        if pointer == size - 1 {
+            continue
+        }
         for j := pointer; j >= 0; j-- {
             game.matrix[i][j] = 0
         }
@@ -136,6 +132,9 @@ fn (mut game Game) move_up() {
                 pointer++
             }
         }
+        if pointer == 0 {
+            continue
+        }
         for i := pointer; i < size; i++ {
             game.matrix[i][j] = 0
         }
@@ -173,6 +172,9 @@ fn (mut game Game) move_down() {
                 game.matrix[pointer][j] = game.matrix[i][j]
                 pointer--
             }
+        }
+        if pointer == size - 1 {
+            continue
         }
         for i := pointer; i >= 0; i-- {
             game.matrix[i][j] = 0

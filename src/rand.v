@@ -1,5 +1,6 @@
-import rand
+module main
 
+import rand
 import rand.pcg32
 import rand.mt19937
 import rand.xoroshiro128pp
