@@ -5,8 +5,7 @@ import term
 import math
 
 const (
-	directions = [Direction.up, .down, .left, .right]
-	dfs_depth = 9
+	dfs_depth = 7
 	pred_per_move = 500
 	pred_depth = 35
 	minmax_depth = 10
@@ -87,8 +86,8 @@ fn (game Game) ai_dfs() Prediction {
         if game.can_move.query(dir) {
             mut temp_game := game.clone()
             temp_game.move(dir)
-            temp_game.refresh_move_status()
             temp_game.generate_number()
+            temp_game.refresh_move_status()
             score := dfs_perform(temp_game, 0)
             if score > best_prediction.move_score {
                 best_prediction.move = dir
@@ -108,8 +107,8 @@ fn dfs_perform(game &Game, depth int) int {
         if game.can_move.query(dir) {
             mut temp_game := game.clone()
             temp_game.move(dir)
-            temp_game.refresh_move_status()
             temp_game.generate_number()
+            temp_game.refresh_move_status()
             score := dfs_perform(temp_game, depth + 1)
             if score > max_score {
                 max_score = score
@@ -354,8 +353,8 @@ fn ab_find_min(game &Game, depth int, alpha int, beta int) int {
 		}
 		mut temp_game := game.clone()
 		temp_game.move(dir)
-		temp_game.refresh_move_status()
 		temp_game.generate_number()
+		temp_game.refresh_move_status()
 
 		score := ab_find_max(temp_game, depth - 1, alpha, temp_beta)
 		min_score = if min_score < score { min_score } else { score }
@@ -385,11 +384,11 @@ fn (mut game Game) ai_monte() Prediction {
 			}
 			mut temp_game := game.clone()
 			temp_game.move(dir)
+			temp_game.generate_number()
 			temp_game.refresh_move_status()
 			if !temp_game.can_move.exist() {
 				continue
 			}
-			temp_game.generate_number()
 			all_score += temp_game.score
 			mut move_depth := 0
 			for temp_game.can_move.exist() {
@@ -399,8 +398,8 @@ fn (mut game Game) ai_monte() Prediction {
 					continue
 				}
 				temp_game.move(rand_dir)
-				temp_game.refresh_move_status()
 				temp_game.generate_number()
+				temp_game.refresh_move_status()
 				move_depth++
 				if move_depth > pred_depth {
 					break
@@ -488,8 +487,8 @@ fn (game Game) train_qlearning() {
 
             mut next_game := current_game.clone()
             next_game.move(action)
-            next_game.refresh_move_status()
             next_game.generate_number()
+            next_game.refresh_move_status()
 
             next_state := next_game.get_state_string()
             reward := next_game.score - prev_score

@@ -6,6 +6,7 @@ import strings
 const (
     size = 4
     init_number_count = 2
+	directions = [Direction.up, .down, .left, .right]
 )
 
 enum Direction {
@@ -67,8 +68,8 @@ fn (mut game Game) step(dir Direction) {
 
 	// Move, spawn new number and refresh move status
 	game.move(dir)
-	game.refresh_move_status()
 	game.generate_number()
+	game.refresh_move_status()
 	game.moves++
 
 	// Print the matrix and status
@@ -130,9 +131,10 @@ fn (mut game Game) put_number(row int, col int, value int) ? {
 fn (mut game Game) generate_number() {
 	cells := game.find_empty_cells()
 	if cells.len > 0 {
-		index := cells[rng.u8() % cells.len]
-		random := rng.f32n(1.0) or { 0.0 }
-		value := if random < 0.9 { 2 } else { 4 }
+		// Generate only once due to performance issue
+		rand_val := rng.u32()
+		index := cells[rand_val % u32(cells.len)]
+		value := if rand_val % 10 < 9 { 2 } else { 4 }
 		game.put_number(index / size, index % size, value)
 	}
 }
