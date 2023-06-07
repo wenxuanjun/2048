@@ -48,8 +48,8 @@ fn main() {
     move_log = move_log_tmp
     enable_ai = enable_ai_tmp
     q_table = &QTable{
-		data: map[string]map[Direction]f64{}
-	}
+        data: map[string]map[Direction]f64{}
+    }
 
     mut game := game_init()
 

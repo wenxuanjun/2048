@@ -2,20 +2,20 @@ module main
 
 [inline]
 fn (mut game Game) move(dir Direction) {
-	match dir {
-		.left {
-			game.move_left()
-		}
-		.right {
-			game.move_right()
-		}
-		.up {
-			game.move_up()
-		}
-		.down {
-			game.move_down()
-		}
-	}
+    match dir {
+        .left {
+            game.move_left()
+        }
+        .right {
+            game.move_right()
+        }
+        .up {
+            game.move_up()
+        }
+        .down {
+            game.move_down()
+        }
+    }
 }
 
 fn (mut game Game) move_left() {

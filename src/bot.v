@@ -5,83 +5,83 @@ import term
 import math
 
 const (
-	dfs_depth = 7
-	pred_per_move = 500
-	pred_depth = 35
-	minmax_depth = 10
-	learning_rate = 0.1
-	discount_factor = 0.99
-	exploration_rate = 0.1
-	n_episodes = 3000
+    dfs_depth = 7
+    pred_per_move = 500
+    pred_depth = 35
+    minmax_depth = 10
+    learning_rate = 0.1
+    discount_factor = 0.99
+    exploration_rate = 0.1
+    n_episodes = 3000
 )
 
 struct Prediction {
 mut:
-	move Direction
-	move_score f64
+    move Direction
+    move_score f64
 }
 
 struct AiPerform {
-	prediction Prediction
-	think_time i64
+    prediction Prediction
+    think_time i64
 }
 
 enum AiAlgo {
-	dfs
-	heuristic
-	minmax
-	expectimax
-	monte
-	reinforcement
+    dfs
+    heuristic
+    minmax
+    expectimax
+    monte
+    reinforcement
 }
 
 fn algo_from_str(str string) AiAlgo {
-	return match str {
-		"dfs" { AiAlgo.dfs }
-		"heuristic" { AiAlgo.heuristic }
-		"minmax" { AiAlgo.minmax }
-		"expectimax" { AiAlgo.expectimax }
-		"monte" { AiAlgo.monte }
-		"reinforcement" { AiAlgo.reinforcement }
-		else { eprintln("Invalid AI algorithm!") exit(1) }
-	}
+    return match str {
+        "dfs" { AiAlgo.dfs }
+        "heuristic" { AiAlgo.heuristic }
+        "minmax" { AiAlgo.minmax }
+        "expectimax" { AiAlgo.expectimax }
+        "monte" { AiAlgo.monte }
+        "reinforcement" { AiAlgo.reinforcement }
+        else { eprintln("Invalid AI algorithm!") exit(1) }
+    }
 }
 
 fn (mut game Game) ai_move() {
-	think_watch := time.new_stopwatch()
-	prediction := match ai_algo {
-		.dfs { game.ai_dfs() }
-		.heuristic { game.ai_heuristic() }
-		.minmax { game.ai_minmax() }
-		.expectimax { game.ai_expectimax() }
-		.monte { game.ai_monte() }
-		.reinforcement { game.ai_reinforcement() }
-	}
-	think_time := think_watch.elapsed()
-	ai_perform := &AiPerform{
-		prediction: prediction,
-		think_time: think_time.milliseconds(),
-	}
-	game.ai_perform(ai_perform)
+    think_watch := time.new_stopwatch()
+    prediction := match ai_algo {
+        .dfs { game.ai_dfs() }
+        .heuristic { game.ai_heuristic() }
+        .minmax { game.ai_minmax() }
+        .expectimax { game.ai_expectimax() }
+        .monte { game.ai_monte() }
+        .reinforcement { game.ai_reinforcement() }
+    }
+    think_time := think_watch.elapsed()
+    ai_perform := &AiPerform{
+        prediction: prediction,
+        think_time: think_time.milliseconds(),
+    }
+    game.ai_perform(ai_perform)
 }
 
 fn (mut game Game) ai_perform(perform AiPerform) {
-	if !move_log && game.moves != 0 {
-		term.clear_previous_line()
-	}
-	print('Score: ${game.score} | ')
-	print('Moves: ${game.moves} | ')
-	print('Time: ${perform.think_time}ms | ')
-	print('Move: ${perform.prediction.move} | ')
-	println('Move Score: ${perform.prediction.move_score}')
-	game.step(perform.prediction.move)
+    if !move_log && game.moves != 0 {
+        term.clear_previous_line()
+    }
+    print('Score: ${game.score} | ')
+    print('Moves: ${game.moves} | ')
+    print('Time: ${perform.think_time}ms | ')
+    print('Move: ${perform.prediction.move} | ')
+    println('Move Score: ${perform.prediction.move_score}')
+    game.step(perform.prediction.move)
 }
 
 fn (game Game) ai_dfs() Prediction {
     mut best_prediction := Prediction{
-		move: .up,
-		move_score: -1.0
-	}
+        move: .up,
+        move_score: -1.0
+    }
     for dir in directions {
         if game.can_move.query(dir) {
             mut temp_game := game.clone()
@@ -119,27 +119,27 @@ fn dfs_perform(game &Game, depth int) int {
 }
 
 fn (game Game) ai_heuristic() Prediction {
-	mut predictions := [4]Prediction{}
-	mut smallest_num := [17, 17, 17, 17]
-	for dir in directions {
-		if !game.can_move.query(dir) {
-			smallest_num[int(dir)] = 100
-			continue
-		}
-		predictions[int(dir)].move = dir
-		mut temp_game := game.clone()
-		temp_game.move(dir)
-		temp_game.refresh_move_status()
-		smallest_num[int(dir)] = temp_game.count_empty_num()
-	}
-	mut prediction := predictions[0]
-	minimum := smallest_num[0]
-	for i in 0 .. directions.len {
-		if smallest_num[i] < minimum {
-			prediction = predictions[i]
-		}
-	}
-	return prediction
+    mut predictions := [4]Prediction{}
+    mut smallest_num := [17, 17, 17, 17]
+    for dir in directions {
+        if !game.can_move.query(dir) {
+            smallest_num[int(dir)] = 100
+            continue
+        }
+        predictions[int(dir)].move = dir
+        mut temp_game := game.clone()
+        temp_game.move(dir)
+        temp_game.refresh_move_status()
+        smallest_num[int(dir)] = temp_game.count_empty_num()
+    }
+    mut prediction := predictions[0]
+    minimum := smallest_num[0]
+    for i in 0 .. directions.len {
+        if smallest_num[i] < minimum {
+            prediction = predictions[i]
+        }
+    }
+    return prediction
 }
 
 struct ExpectGrid {
@@ -157,10 +157,10 @@ fn (grid ExpectGrid) clone() &ExpectGrid {
 }
 
 fn (game Game) ai_expectimax() Prediction {
-	if size != 4 {
-		eprintln("Expectimax only supports 4x4 grid!")
-		exit(1)
-	}
+    if size != 4 {
+        eprintln("Expectimax only supports 4x4 grid!")
+        exit(1)
+    }
     mut grid := ExpectGrid{
         game: &game
         active: false
@@ -169,7 +169,7 @@ fn (game Game) ai_expectimax() Prediction {
     mut best_move := Direction.up
 
     max_num := grid.game.get_max_number()
-	depth := if max_num >= 2048 { 6 } else if max_num >= 1024 { 5 } else { 4 }
+    depth := if max_num >= 2048 { 6 } else if max_num >= 1024 { 5 } else { 4 }
 
     for dir in directions {
         if !grid.game.can_move.query(dir) {
@@ -181,7 +181,7 @@ fn (game Game) ai_expectimax() Prediction {
         score := new_grid.expect_search(depth)
         if score > best_score {
             best_move = dir
-        	best_score = score
+            best_score = score
         }
     }
     return Prediction{
@@ -210,7 +210,7 @@ fn (grid ExpectGrid) expect_search(depth int) f64 {
             }
         }
     } else {
-		expect_map := {2: 0.9, 4: 0.1}
+        expect_map := {2: 0.9, 4: 0.1}
         cells := grid.game.find_empty_cells()
         for num, prob in expect_map {
             for index in cells {
@@ -229,201 +229,194 @@ fn (grid ExpectGrid) expect_search(depth int) f64 {
 fn (grid ExpectGrid) evaluate_score() f64 {
     mut result := [24]int{}
     for index, model in expect_models {
-		for row := 0; row < size; row++ {
-        	for col := 0; col < size; col++ {
-        	    value := grid.game.matrix[row][col]
-        	    if value != 0 {
-    				start := index * 8
-    				result[start] = value * model[row][col]
-    				result[start + 1] += value * model[row][3 - col]
-    				result[start + 2] += value * model[col][row]
-    				result[start + 3] += value * model[3 - col][row]
-    				result[start + 4] += value * model[3 - row][3 - col]
-    				result[start + 5] += value * model[3 - row][col]
-    				result[start + 6] += value * model[col][3 - row]
-    				result[start + 7] += value * model[3 - col][3 - row]
-        	    }
-    		}
-		}
-	}
-	mut max_number := 0
-	for value in result {
-		if value > max_number {
-			max_number = value
-		}
-	}
+        for row := 0; row < size; row++ {
+            for col := 0; col < size; col++ {
+                value := grid.game.matrix[row][col]
+                if value != 0 {
+                    start := index * 8
+                    result[start] = value * model[row][col]
+                    result[start + 1] += value * model[row][3 - col]
+                    result[start + 2] += value * model[col][row]
+                    result[start + 3] += value * model[3 - col][row]
+                    result[start + 4] += value * model[3 - row][3 - col]
+                    result[start + 5] += value * model[3 - row][col]
+                    result[start + 6] += value * model[col][3 - row]
+                    result[start + 7] += value * model[3 - col][3 - row]
+                }
+            }
+        }
+    }
+    mut max_number := 0
+    for value in result {
+        if value > max_number {
+            max_number = value
+        }
+    }
     return f64(max_number)
 }
 
-/**
- * Weight matrix, see more details here:
- * Github: https://github.com/ovolve/2048-AI
- * Thought of the evaluation function from here either.
- */
 const (
     expect_models = [
-		[
-    	    [16, 15, 14, 13],
-    	    [9, 10, 11, 12],
-    	    [8, 7, 6, 5],
-    	    [1, 2, 3, 4],
-		],
-    	[
-    	    [16, 15, 12, 4],
-    	    [14, 13, 11, 3],
-    	    [10, 9, 8, 2],
-    	    [7, 6, 5, 1],
-		],
-    	[
-    	    [16, 15, 14, 4],
-    	    [13, 12, 11, 3],
-    	    [10, 9, 8, 2],
-    	    [7, 6, 5, 1],
-    	]
-	]
+        [
+            [16, 15, 14, 13],
+            [9, 10, 11, 12],
+            [8, 7, 6, 5],
+            [1, 2, 3, 4],
+        ],
+        [
+            [16, 15, 12, 4],
+            [14, 13, 11, 3],
+            [10, 9, 8, 2],
+            [7, 6, 5, 1],
+        ],
+        [
+            [16, 15, 14, 4],
+            [13, 12, 11, 3],
+            [10, 9, 8, 2],
+            [7, 6, 5, 1],
+        ]
+    ]
 )
 
 fn (game Game) ai_minmax() Prediction {
-	mut best_pred := Prediction{
-		move: Direction.up
-		move_score: f64(-1e10)
-	}
-	for dir in directions {
-		if game.can_move.query(dir) {
-			mut temp_game := game.clone()
-			temp_game.move(dir)
-			temp_game.refresh_move_status()
-			score := ab_find_max(
-				temp_game,
-				minmax_depth,
-				math.min_i32,
-				math.max_i32
-			)
-			if score > best_pred.move_score {
-				best_pred.move = dir
-				best_pred.move_score = score
-			}
-		}
-	}
+    mut best_pred := Prediction{
+        move: Direction.up
+        move_score: f64(-1e10)
+    }
+    for dir in directions {
+        if game.can_move.query(dir) {
+            mut temp_game := game.clone()
+            temp_game.move(dir)
+            temp_game.refresh_move_status()
+            score := ab_find_max(
+                temp_game,
+                minmax_depth,
+                math.min_i32,
+                math.max_i32
+            )
+            if score > best_pred.move_score {
+                best_pred.move = dir
+                best_pred.move_score = score
+            }
+        }
+    }
 
-	return best_pred
+    return best_pred
 }
 
 fn ab_find_max(game &Game, depth int, alpha int, beta int) int {
-	if depth == 0 || !game.can_move.exist() {
-		return game.score
-	}
+    if depth == 0 || !game.can_move.exist() {
+        return game.score
+    }
 
-	mut max_score := math.min_i32
-	mut temp_alpha := alpha
+    mut max_score := math.min_i32
+    mut temp_alpha := alpha
 
-	for dir in directions {
-		if !game.can_move.query(dir) {
-			continue
-		}
-		mut temp_game := game.clone()
-		temp_game.move(dir)
-		temp_game.refresh_move_status()
+    for dir in directions {
+        if !game.can_move.query(dir) {
+            continue
+        }
+        mut temp_game := game.clone()
+        temp_game.move(dir)
+        temp_game.refresh_move_status()
 
-		score := ab_find_min(temp_game, depth - 1, temp_alpha, beta)
-		max_score = if max_score > score { max_score } else { score }
+        score := ab_find_min(temp_game, depth - 1, temp_alpha, beta)
+        max_score = if max_score > score { max_score } else { score }
 
-		if beta <= temp_alpha {
-			break
-		}
-		if temp_alpha < max_score {
-			temp_alpha = max_score
-		}
-	}
+        if beta <= temp_alpha {
+            break
+        }
+        if temp_alpha < max_score {
+            temp_alpha = max_score
+        }
+    }
 
-	return max_score
+    return max_score
 }
 
 fn ab_find_min(game &Game, depth int, alpha int, beta int) int {
-	if depth == 0 || !game.can_move.exist() {
-		return game.score
-	}
+    if depth == 0 || !game.can_move.exist() {
+        return game.score
+    }
 
-	mut min_score := math.max_i32
-	mut temp_beta := beta
+    mut min_score := math.max_i32
+    mut temp_beta := beta
 
-	for dir in directions {
-		if !game.can_move.query(dir) {
-			continue
-		}
-		mut temp_game := game.clone()
-		temp_game.move(dir)
-		temp_game.generate_number()
-		temp_game.refresh_move_status()
+    for dir in directions {
+        if !game.can_move.query(dir) {
+            continue
+        }
+        mut temp_game := game.clone()
+        temp_game.move(dir)
+        temp_game.generate_number()
+        temp_game.refresh_move_status()
 
-		score := ab_find_max(temp_game, depth - 1, alpha, temp_beta)
-		min_score = if min_score < score { min_score } else { score }
+        score := ab_find_max(temp_game, depth - 1, alpha, temp_beta)
+        min_score = if min_score < score { min_score } else { score }
 
-		if temp_beta <= alpha {
-			break
-		}
-		if temp_beta > min_score {
-			temp_beta = min_score
-		}
-	}
+        if temp_beta <= alpha {
+            break
+        }
+        if temp_beta > min_score {
+            temp_beta = min_score
+        }
+    }
 
-	return min_score
+    return min_score
 }
 
 fn (mut game Game) ai_monte() Prediction {
-	mut predictions := [4]Prediction{}
-	for dir in directions {
-		if !game.can_move.query(dir) {
-			continue
-		}
-		mut all_score := 0
-		predictions[int(dir)].move = dir
-		for _ in 0 .. pred_per_move {
-			if !game.can_move.query(dir) {
-				continue
-			}
-			mut temp_game := game.clone()
-			temp_game.move(dir)
-			temp_game.generate_number()
-			temp_game.refresh_move_status()
-			if !temp_game.can_move.exist() {
-				continue
-			}
-			all_score += temp_game.score
-			mut move_depth := 0
-			for temp_game.can_move.exist() {
-				index := rng.u8() % directions.len
-				rand_dir := directions[index]
-				if !temp_game.can_move.query(rand_dir) {
-					continue
-				}
-				temp_game.move(rand_dir)
-				temp_game.generate_number()
-				temp_game.refresh_move_status()
-				move_depth++
-				if move_depth > pred_depth {
-					break
-				}
-			}
-			all_score += temp_game.score
-		}
-		predictions[int(dir)].move_score = f64(all_score) / pred_per_move
-	}
-	mut prediction := predictions[0]
-	for pred in predictions {
-		if prediction.move_score < pred.move_score {
-			prediction = pred
-		}
-	}
-	return prediction
+    mut predictions := []Prediction{}
+    for dir in directions {
+        if !game.can_move.query(dir) {
+            continue
+        }
+        mut all_score := 0
+        for _ in 0 .. pred_per_move {
+            mut temp_game := game.clone()
+            temp_game.move(dir)
+            temp_game.generate_number()
+            temp_game.refresh_move_status()
+            mut move_depth := 0
+            for temp_game.can_move.exist() {
+                index := rng.u8() % directions.len
+                rand_dir := directions[index]
+                if !temp_game.can_move.query(rand_dir) {
+                    continue
+                }
+                temp_game.move(rand_dir)
+                temp_game.generate_number()
+                temp_game.refresh_move_status()
+                move_depth++
+                if move_depth > pred_depth {
+                    break
+                }
+            }
+            all_score += temp_game.score
+        }
+        predictions << &Prediction{
+            move: dir
+            move_score: f64(all_score) / pred_per_move
+        }
+    }
+    mut prediction := Prediction{
+        move: .up
+        move_score: 0.0
+    }
+    for value in predictions {
+        if prediction.move_score < value.move_score {
+            prediction = value
+        }
+    }
+    return prediction
 }
 
 fn (mut game Game) ai_reinforcement() Prediction {
-	prediction := Prediction{
-		move: game.ai_qlearning()
-		move_score: 0.0
-	}
-	return prediction
+    prediction := Prediction{
+        move: game.ai_qlearning()
+        move_score: 0.0
+    }
+    return prediction
 }
 
 pub struct QTable {
@@ -444,8 +437,8 @@ fn (mut qt QTable) update(state string, action Direction, new_value f64) {
     if mut action_values := qt.data[state] {
         action_values[action] = new_value
     } else {
-		mut temp_map := map[Direction]f64{}
-		temp_map[action] = new_value
+        mut temp_map := map[Direction]f64{}
+        temp_map[action] = new_value
         qt.data[state] = temp_map.clone()
     }
 }
@@ -473,7 +466,7 @@ fn (mut game Game) ai_qlearning() Direction {
         return valid_actions[rng.intn(valid_actions.len) or { 0 }]
     }
 
-	return q_table.choose_action(state, valid_actions)
+    return q_table.choose_action(state, valid_actions)
 }
 
 fn (game Game) train_qlearning() {
