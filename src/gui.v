@@ -37,10 +37,10 @@ const (
 )
 
 struct Theme {
+    tile_colors []gx.Color
     bakground_color gx.Color
     container_color gx.Color
-    text_color fn (int) gx.Color
-    tile_colors []gx.Color
+    text_color fn (int) gx.Color @[required]
 }
 
 struct Gui {

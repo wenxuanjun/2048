@@ -309,7 +309,7 @@ fn ab_find_max(game &Game, depth int, alpha int, beta int) int {
         return game.score
     }
 
-    mut max_score := math.min_i32
+    mut max_score := int(math.max_int)
     mut temp_alpha := alpha
 
     for dir in directions {
@@ -339,7 +339,7 @@ fn ab_find_min(game &Game, depth int, alpha int, beta int) int {
         return game.score
     }
 
-    mut min_score := math.max_i32
+    mut min_score := int(math.max_int)
     mut temp_beta := beta
 
     for dir in directions {
