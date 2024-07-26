@@ -2,7 +2,6 @@ module main
 
 import time
 import term
-import math
 
 const (
     dfs_depth = 7
@@ -162,7 +161,7 @@ fn (game Game) ai_expectimax() Prediction {
         exit(1)
     }
     mut grid := ExpectGrid{
-        game: &game
+        game: game.clone()
         active: false
     }
     mut best_score := f64(-1)
@@ -291,8 +290,8 @@ fn (game Game) ai_minmax() Prediction {
             score := ab_find_max(
                 temp_game,
                 minmax_depth,
-                math.min_i32,
-                math.max_i32
+                min_i32,
+                max_i32
             )
             if score > best_pred.move_score {
                 best_pred.move = dir
@@ -309,7 +308,7 @@ fn ab_find_max(game &Game, depth int, alpha int, beta int) int {
         return game.score
     }
 
-    mut max_score := int(math.max_int)
+    mut max_score := int(max_i32)
     mut temp_alpha := alpha
 
     for dir in directions {
@@ -339,7 +338,7 @@ fn ab_find_min(game &Game, depth int, alpha int, beta int) int {
         return game.score
     }
 
-    mut min_score := int(math.max_int)
+    mut min_score := int(max_i32)
     mut temp_beta := beta
 
     for dir in directions {

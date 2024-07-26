@@ -6,7 +6,7 @@ import rand.mt19937
 import rand.xoroshiro128pp
 import rand.wyrand
 
-[inline]
+@[inline]
 fn list_prng() {
     prng_names := [
         "pcg32"
@@ -18,7 +18,7 @@ fn list_prng() {
     for name in prng_names { println("    " + name) }
 }
 
-[inline]
+@[inline]
 fn get_prng(algo string) &rand.PRNG {
     match algo {
         "pcg32" {

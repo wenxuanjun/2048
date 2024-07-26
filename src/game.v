@@ -88,7 +88,7 @@ fn (mut game Game) step(dir Direction) {
     }
 }
 
-[inline]
+@[inline]
 fn get_dir(key gg.KeyCode) ?Direction {
     match key {
         .left { return .left }
@@ -114,13 +114,13 @@ fn (game Game) find_empty_cells(prob ...f32) []int {
     return cells
 }
 
-[inline]
+@[inline]
 fn (game Game) count_empty_num() int {
     cells := game.find_empty_cells()
     return cells.len
 }
 
-[inline]
+@[inline]
 fn (mut game Game) put_number(row int, col int, value int) ? {
     if game.matrix[row][col] != 0 {
         panic("Cannot put number where not eq zero!")
@@ -161,7 +161,7 @@ fn (game Game) get_valid_actions() []Direction {
     return valid_actions
 }
 
-[inline]
+@[inline]
 fn (mut game Game) refresh_move_status() {
     game.can_move = &CanMove{
         left: game.can_move_left()

@@ -45,9 +45,9 @@ struct Theme {
 
 struct Gui {
 mut:
-    game &Game
-    gg &gg.Context
+    game Game
     window Window
+    gg &gg.Context = unsafe { nil }
 }
 
 struct Window {
@@ -63,10 +63,9 @@ mut:
     y_offset int
 }
 
-fn gui_init(game &Game) &Gui {
+fn gui_init(game Game) &Gui {
     mut gui := &Gui{
-        gg: 0
-        game: unsafe { game }
+        game: game
     }
     gui.gg = gg.new_context(
         width: default_width

@@ -1,6 +1,6 @@
 module main
 
-[inline]
+@[inline]
 fn (mut game Game) move(dir Direction) {
     match dir {
         .left {

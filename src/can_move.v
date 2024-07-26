@@ -7,12 +7,12 @@ struct CanMove {
     right bool
 }
 
-[inline]
+@[inline]
 fn (move CanMove) exist() bool {
     return move.left || move.right || move.up || move.down
 }
 
-[inline]
+@[inline]
 fn (move CanMove) query(dir Direction) bool {
     match dir {
         .left {
