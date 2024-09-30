@@ -3,11 +3,9 @@ module main
 import gg
 import strings
 
-const (
-    size = 4
-    init_number_count = 2
-    directions = [Direction.up, .down, .left, .right]
-)
+const size = 4
+const init_number_count = 2
+const directions = [Direction.up, .down, .left, .right]
 
 enum Direction {
     left

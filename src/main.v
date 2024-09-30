@@ -12,16 +12,14 @@ __global (
     q_table &QTable
 )
 
-const (
-    usage = [
-        "use AI to perform moves"
-        "always run AI if GUI disabled"
-        "log moves, disabled when AI enabled"
-        "the AI algorithm to use"
-        "random number generator algorithm"
-        "list available random number generators"
-    ]
-)
+const usage = [
+    "use AI to perform moves"
+    "always run AI if GUI disabled"
+    "log moves, disabled when AI enabled"
+    "the AI algorithm to use"
+    "random number generator algorithm"
+    "list available random number generators"
+]
 
 fn main() {
     mut fp := flag.new_flag_parser(os.args)

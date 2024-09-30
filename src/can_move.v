@@ -32,15 +32,8 @@ fn (move CanMove) query(dir Direction) bool {
 
 fn (game Game) can_move_left() bool {
     for i := 0; i < size; i++ {
-        mut index := -1
-        for j := size - 1; j >= 0; j-- {
+        for j := 1; j < size; j++ {
             if game.matrix[i][j] != 0 {
-                index = j
-                break
-            }
-        }
-        if index != -1 {
-            for j := index; j > 0; j-- {
                 if game.matrix[i][j - 1] == 0 || game.matrix[i][j] == game.matrix[i][j - 1] {
                     return true
                 }
@@ -52,15 +45,8 @@ fn (game Game) can_move_left() bool {
 
 fn (game Game) can_move_right() bool {
     for i := 0; i < size; i++ {
-        mut index := -1
-        for j := 0; j < size; j++ {
+        for j := size - 2; j >= 0; j-- {
             if game.matrix[i][j] != 0 {
-                index = j
-                break
-            }
-        }
-        if index != -1 {
-            for j := index; j < size - 1; j++ {
                 if game.matrix[i][j + 1] == 0 || game.matrix[i][j] == game.matrix[i][j + 1] {
                     return true
                 }
@@ -72,15 +58,8 @@ fn (game Game) can_move_right() bool {
 
 fn (game Game) can_move_up() bool {
     for j := 0; j < size; j++ {
-        mut index := -1
-        for i := size - 1; i >= 0; i-- {
+        for i := 1; i < size; i++ {
             if game.matrix[i][j] != 0 {
-                index = i
-                break
-            }
-        }
-        if index != -1 {
-            for i := index; i > 0; i-- {
                 if game.matrix[i - 1][j] == 0 || game.matrix[i][j] == game.matrix[i - 1][j] {
                     return true
                 }
@@ -92,15 +71,8 @@ fn (game Game) can_move_up() bool {
 
 fn (game Game) can_move_down() bool {
     for j := 0; j < size; j++ {
-        mut index := -1
-        for i := 0; i < size; i++ {
+        for i := size - 2; i >= 0; i-- {
             if game.matrix[i][j] != 0 {
-                index = i
-                break
-            }
-        }
-        if index != -1 {
-            for i := index; i < size - 1; i++ {
                 if game.matrix[i + 1][j] == 0 || game.matrix[i][j] == game.matrix[i + 1][j] {
                     return true
                 }

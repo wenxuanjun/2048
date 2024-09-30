@@ -4,37 +4,36 @@ import gg
 import gx
 import math
 
-const (
-    theme = &Theme{
-        tile_colors: [
-            gx.rgb(205, 193, 180),
-            gx.rgb(238, 228, 218),
-            gx.rgb(237, 224, 200),
-            gx.rgb(242, 177, 121),
-            gx.rgb(245, 149, 99),
-            gx.rgb(246, 124, 95),
-            gx.rgb(246, 94, 59),
-            gx.rgb(237, 207, 114),
-            gx.rgb(237, 204, 97),
-            gx.rgb(237, 200, 80),
-            gx.rgb(237, 197, 63),
-            gx.rgb(237, 194, 46),
-            gx.rgb(60, 58, 50)
-        ]
-        bakground_color: gx.rgb(250, 248, 239)
-        container_color: gx.rgb(187, 173, 160)
-        text_color: fn (tile_value int) gx.Color {
-            if tile_value < 8 {
-                return gx.rgb(119, 110, 101)
-            } else {
-                return gx.rgb(249, 246, 242)
-            }
+const theme = &Theme{
+    tile_colors: [
+        gx.rgb(205, 193, 180),
+        gx.rgb(238, 228, 218),
+        gx.rgb(237, 224, 200),
+        gx.rgb(242, 177, 121),
+        gx.rgb(245, 149, 99),
+        gx.rgb(246, 124, 95),
+        gx.rgb(246, 94, 59),
+        gx.rgb(237, 207, 114),
+        gx.rgb(237, 204, 97),
+        gx.rgb(237, 200, 80),
+        gx.rgb(237, 197, 63),
+        gx.rgb(237, 194, 46),
+        gx.rgb(60, 58, 50)
+    ]
+    bakground_color: gx.rgb(250, 248, 239)
+    container_color: gx.rgb(187, 173, 160)
+    text_color: fn (tile_value int) gx.Color {
+        if tile_value < 8 {
+            return gx.rgb(119, 110, 101)
+        } else {
+            return gx.rgb(249, 246, 242)
         }
     }
-    default_width = 465
-    default_height = 500
-    window_title = "2048"
-)
+}
+
+const default_width = 465
+const default_height = 500
+const window_title = "2048"
 
 struct Theme {
     tile_colors []gx.Color
@@ -85,11 +84,10 @@ fn gui_init(game Game) &Gui {
 fn on_event(e &gg.Event, mut gui Gui) {
     match e.typ {
         .key_down {
-            if enable_ai {
-                return
+            if !enable_ai {
+                dir := get_dir(e.key_code)
+                gui.game.step(dir or { return })
             }
-            dir := get_dir(e.key_code)
-            gui.game.step(dir or { return })
         }
         .resized, .restored, .resumed {
             gui.on_resize()

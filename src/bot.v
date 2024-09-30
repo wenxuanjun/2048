@@ -3,16 +3,14 @@ module main
 import time
 import term
 
-const (
-    dfs_depth = 7
-    pred_per_move = 500
-    pred_depth = 35
-    minmax_depth = 10
-    learning_rate = 0.1
-    discount_factor = 0.99
-    exploration_rate = 0.1
-    n_episodes = 3000
-)
+const dfs_depth = 7
+const pred_per_move = 500
+const pred_depth = 35
+const minmax_depth = 10
+const learning_rate = 0.1
+const discount_factor = 0.99
+const exploration_rate = 0.1
+const n_episodes = 3000
 
 struct Prediction {
 mut:
@@ -254,28 +252,26 @@ fn (grid ExpectGrid) evaluate_score() f64 {
     return f64(max_number)
 }
 
-const (
-    expect_models = [
-        [
-            [16, 15, 14, 13],
-            [9, 10, 11, 12],
-            [8, 7, 6, 5],
-            [1, 2, 3, 4],
-        ],
-        [
-            [16, 15, 12, 4],
-            [14, 13, 11, 3],
-            [10, 9, 8, 2],
-            [7, 6, 5, 1],
-        ],
-        [
-            [16, 15, 14, 4],
-            [13, 12, 11, 3],
-            [10, 9, 8, 2],
-            [7, 6, 5, 1],
-        ]
+const expect_models = [
+    [
+        [16, 15, 14, 13],
+        [9, 10, 11, 12],
+        [8, 7, 6, 5],
+        [1, 2, 3, 4],
+    ],
+    [
+        [16, 15, 12, 4],
+        [14, 13, 11, 3],
+        [10, 9, 8, 2],
+        [7, 6, 5, 1],
+    ],
+    [
+        [16, 15, 14, 4],
+        [13, 12, 11, 3],
+        [10, 9, 8, 2],
+        [7, 6, 5, 1],
     ]
-)
+]
 
 fn (game Game) ai_minmax() Prediction {
     mut best_pred := Prediction{
