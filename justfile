@@ -11,7 +11,7 @@ play:
 
 # Build the project
 build:
-    {{v}} -prod -skip-unused -no-bounds-checking -show-timings -cc gcc -cflags "-flto" .
+    {{v}} -prod -no-bounds-checking -show-timings -cc gcc -cflags "-flto" .
 
 # Debug with bounds checking
 debug *flags:
