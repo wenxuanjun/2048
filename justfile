@@ -1,5 +1,5 @@
-# Enable global variables in V
-v := "v -enable-globals"
+# The V executable path
+v := "v"
 
 # Debug without bounds checking
 run *flags:

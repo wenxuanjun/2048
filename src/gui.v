@@ -1,32 +1,31 @@
 module main
 
 import gg
-import gx
 import math
 
 const theme = &Theme{
     tile_colors: [
-        gx.rgb(205, 193, 180),
-        gx.rgb(238, 228, 218),
-        gx.rgb(237, 224, 200),
-        gx.rgb(242, 177, 121),
-        gx.rgb(245, 149, 99),
-        gx.rgb(246, 124, 95),
-        gx.rgb(246, 94, 59),
-        gx.rgb(237, 207, 114),
-        gx.rgb(237, 204, 97),
-        gx.rgb(237, 200, 80),
-        gx.rgb(237, 197, 63),
-        gx.rgb(237, 194, 46),
-        gx.rgb(60, 58, 50)
+        gg.rgb(205, 193, 180),
+        gg.rgb(238, 228, 218),
+        gg.rgb(237, 224, 200),
+        gg.rgb(242, 177, 121),
+        gg.rgb(245, 149, 99),
+        gg.rgb(246, 124, 95),
+        gg.rgb(246, 94, 59),
+        gg.rgb(237, 207, 114),
+        gg.rgb(237, 204, 97),
+        gg.rgb(237, 200, 80),
+        gg.rgb(237, 197, 63),
+        gg.rgb(237, 194, 46),
+        gg.rgb(60, 58, 50)
     ]
-    bakground_color: gx.rgb(250, 248, 239)
-    container_color: gx.rgb(187, 173, 160)
-    text_color: fn (tile_value int) gx.Color {
-        if tile_value < 8 {
-            return gx.rgb(119, 110, 101)
+    bakground_color: gg.rgb(250, 248, 239)
+    container_color: gg.rgb(187, 173, 160)
+    text_color: fn (tile_value int) gg.Color {
+        return if tile_value < 8 {
+            gg.rgb(119, 110, 101)
         } else {
-            return gx.rgb(249, 246, 242)
+            gg.rgb(249, 246, 242)
         }
     }
 }
@@ -36,17 +35,17 @@ const default_height = 500
 const window_title = "2048"
 
 struct Theme {
-    tile_colors []gx.Color
-    bakground_color gx.Color
-    container_color gx.Color
-    text_color fn (int) gx.Color @[required]
+    tile_colors []gg.Color
+    bakground_color gg.Color
+    container_color gg.Color
+    text_color fn (int) gg.Color @[required]
 }
 
 struct Gui {
 mut:
     game Game
     window Window
-    gg &gg.Context = unsafe { nil }
+    gg gg.Context
 }
 
 struct Window {
@@ -171,7 +170,7 @@ fn (gui Gui) draw_tiles() {
                 x_font := x_tile + tile_size / 2
                 y_font := y_tile + tile_size / 2
                 tile_log := 5 - int(math.log10(tile_value))
-                format := &gx.TextCfg{
+                format := &gg.TextCfg{
                     color: theme.text_color(tile_value)
                     align: .center
                     vertical_align: .middle
@@ -183,8 +182,8 @@ fn (gui Gui) draw_tiles() {
     }
 
     // Draw the score of the game
-    score_format := &gx.TextCfg{
-        color: gx.black
+    score_format := &gg.TextCfg{
+        color: gg.black
         align: .left
         vertical_align: .middle
         size: gui.window.font_size * 2 / 5
@@ -193,8 +192,8 @@ fn (gui Gui) draw_tiles() {
     gui.gg.draw_text(x_start, y_lable, 'Scores: ${gui.game.score}', score_format)
 
     // Draw the moves of the game
-    move_format := &gx.TextCfg{
-        color: gx.black
+    move_format := &gg.TextCfg{
+        color: gg.black
         align: .right
         vertical_align: .middle
         size: gui.window.font_size * 2 / 5
